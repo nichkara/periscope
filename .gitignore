@@ -3,3 +3,4 @@
 *.cf
 xvhdl*
 Vivado*
+*_tb
