@@ -1,6 +1,6 @@
 -- cpu.vhd
 -- Created on: Mo 19. Dez 11:07:17 CET 2022
--- Author(s): Yannick Reiß, Carl Ries, Alexander Graf
+-- Author(s): Yannick Reiss
 -- Content:  Entity cpu
 library IEEE;
 use ieee.std_logic_1164.all;
@@ -12,14 +12,14 @@ use work.riscv_types.all;
 -- Entity cpu: path implementation of RISC-V cpu
 entity cpu is
   port(
-    clk : in std_logic;                 -- clk to control the unit
-
-    -- Led Output
-    led : out std_logic_vector(15 downto 0);  -- output to 16 LEDS
-
-    -- RGB Output
-    RGB1 : out std_logic_vector(2 downto 0);  -- output to RGB 1
-    RGB2 : out std_logic_vector(2 downto 0)   -- output to RGB 2
+    clk                 : in  std_logic;  -- clk to control the unit
+    rst                 : in  std_logic;
+    instruction_read    : in  word;
+    ram_read_data       : in  word;
+    ram_enable_writing  : out std_logic;
+    instruction_pointer : out ram_addr_t;
+    data_address        : out ram_addr_t;
+    ram_write_data      : out word
     );
 end cpu;
 
@@ -33,18 +33,6 @@ architecture implementation of cpu is
       addr_calc : in  ram_addr_t;       -- Address from ALU
       doJump    : in  one_bit;          -- Jump to Address
       addr      : out ram_addr_t        -- Address to Decoder
-      );
-  end component;
-
-  component ram
-    port(
-      clk            : in  std_logic;   -- Clock input for timing
-      instructionAdr : in  ram_addr_t;  -- Address instruction
-      dataAdr        : in  ram_addr_t;  -- Address data
-      writeEnable    : in  one_bit;     -- Read or write mode
-      dataIn         : in  word;        -- Write data
-      instruction    : out word;        -- Get instruction
-      dataOut        : out word         -- Read data
       );
   end component;
 
@@ -69,9 +57,9 @@ architecture implementation of cpu is
 
   component imm
     port (
-      instruction : in  instruction;
-      opcode      : in  uOP;
-      immediate   : out word
+      instr     : in  instruction;
+      opcode    : in  uOP;
+      immediate : out word
       );
   end component;
 
@@ -85,8 +73,7 @@ architecture implementation of cpu is
       r2_idx       : in  reg_idx;       -- second register to read from
       write_enable : in  one_bit;       -- enable writing to wr_idx
       r1_out       : out word;          -- data from first register
-      r2_out       : out word;          -- data from second register
-      led_out      : out word           -- output led
+      r2_out       : out word           -- data from second register
       );
   end component;
 
@@ -100,15 +87,12 @@ architecture implementation of cpu is
   end component;
 
   -- SIGNALS GLOBAL
-  signal s_clock          : std_logic;
-  signal s_reg_wb_enable  : one_bit;    --enables: register writeback
-  signal s_reg_wr_enable  : one_bit;    --enables: register write to index
-  signal s_pc_enable      : one_bit;    --enables: pc 
-  signal s_pc_jump_enable : one_bit;    --enables: pc jump to address
-  signal s_ram_enable     : one_bit;    --enables: ram write enalbe
-  signal s_led_out        : word := "10110011100001110111010110101110";  -- stores the exact output
-
-
+  signal s_clock          : std_logic := '0';
+  signal s_reg_wb_enable  : one_bit   := "0";  --enables: register writeback
+  signal s_reg_wr_enable  : one_bit   := "0";  --enables: register write to index
+  signal s_pc_enable      : one_bit   := "0";  --enables: pc
+  signal s_pc_jump_enable : one_bit   := "0";  --enables: pc jump to address
+  signal s_ram_enable     : std_logic := '0';  --enables: ram write enalbe
 
   -- decoder -> registers
   signal s_idx_1  : reg_idx;
@@ -122,8 +106,8 @@ architecture implementation of cpu is
   signal s_reg_data1 : word;
   signal s_reg_data2 : word;
 
-  -- pc -> ram  
-  signal s_instAdr            : ram_addr_t;
+  -- pc -> ram
+  signal s_instAddr           : ram_addr_t;
   signal s_cycle_cnt          : cpuStates := stIF;
   signal s_branch_jump_enable : one_bit;
 
@@ -133,11 +117,9 @@ architecture implementation of cpu is
   -- ram -> register
   signal s_ram_data : word;
 
-  --ram -> decoder + imm 
+  --ram -> decoder + imm
   signal s_inst         : instruction;
   signal s_data_in_addr : ram_addr_t;
-
-
 
   --  v  dummy signals below  v
 
@@ -150,8 +132,8 @@ architecture implementation of cpu is
   -- ???   -> alu
   signal X_addr_calc : ram_addr_t;
 
-  -- Clock signals 
-  signal reset : std_logic;
+  -- Clock signals
+  signal reset  : std_logic;
   signal locked : std_logic;
 
 -------------------------
@@ -167,7 +149,14 @@ architecture implementation of cpu is
 
 begin
 
-  s_clock <= clk;
+  -- External assignments
+  s_clock             <= clk;
+  ram_enable_writing  <= s_ram_enable;
+  instruction_pointer <= s_instAddr;
+  data_address        <= s_data_in_addr;
+  ram_write_data      <= s_alu_data;
+  s_inst              <= instruction_read;
+  s_ram_data          <= ram_read_data;
 
   decoder_RISCV : decoder
     port map(
@@ -188,15 +177,14 @@ begin
       r2_idx       => s_idx_2,
       write_enable => s_reg_wr_enable,
       r1_out       => s_reg_data1,
-      r2_out       => s_reg_data2,
-      led_out      => s_led_out
+      r2_out       => s_reg_data2
       );
 
   imm_RISCV : imm
     port map(
-      instruction => s_inst,
-      opcode      => s_opcode,
-      immediate   => s_immediate
+      instr     => s_inst,
+      opcode    => s_opcode,
+      immediate => s_immediate
       );
 
   pc_RISCV : pc
@@ -205,7 +193,7 @@ begin
       en_pc     => s_pc_enable,
       addr_calc => X_addr_calc,
       doJump    => s_pc_jump_enable,
-      addr      => s_instAdr
+      addr      => s_instAddr
       );
 
   alu_RISCV : alu
@@ -214,17 +202,6 @@ begin
       input1  => aluIn1,
       input2  => aluIn2,
       result  => s_alu_data
-      );
-
-  ram_RISCV : ram
-    port map(
-      clk            => s_clock,         -- 
-      instructionAdr => s_instAdr,       -- instruction from pc
-      dataAdr        => s_data_in_addr,  -- data address from alu
-      writeEnable    => s_ram_enable,    --
-      dataIn         => s_reg_data2,     -- data from register
-      instruction    => s_inst,          --
-      dataOut        => s_ram_data
       );
 
   branch_RISCV : Branch
@@ -243,8 +220,6 @@ begin
   -----------------------------------------
   -- Output
   -----------------------------------------
-  led  <= s_led_out(15 downto 0);
-  RGB1 <= s_clock & s_clock & s_clock;
 
   alu_control : process (s_immediate, s_opcode, s_reg_data1, s_reg_data2)  -- runs only, when item in list changed
   begin
@@ -276,8 +251,8 @@ begin
     end case;
   end process;
 
-  -- Process register_data_input  select which input is needed for register 
-  register_data_input : process (s_cycle_cnt, s_opcode, s_ram_data, s_alu_data)  -- runs only, when item in list changed 
+  -- Process register_data_input  select which input is needed for register
+  register_data_input : process (s_cycle_cnt, s_opcode, s_ram_data, s_alu_data)  -- runs only, when item in list changed
   begin
     s_reg_wb_enable <= "0";
     case s_opcode is
@@ -297,43 +272,43 @@ begin
     end case;
   end process;
 
-  -- Process pc input 
-  pc_addr_input : process(s_opcode, s_cycle_cnt, s_instAdr, s_immediate)
+  -- Process pc input
+  pc_addr_input : process(s_opcode, s_cycle_cnt, s_instAddr, s_immediate)
   begin
     if s_cycle_cnt = stWB then
       s_pc_enable <= "1";
     else
       s_pc_enable <= "0";
-    -- X_addr_calc <= s_instAdr; -- should not be necessary, every case option sets X_addr_calc
+    -- X_addr_calc <= s_instAddr; -- should not be necessary, every case option sets X_addr_calc
     end if;
     case s_opcode is
       when uJALR | uJAL =>
         s_pc_jump_enable <= "1";
-        X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAdr));
+        X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
 
       -- Branch op_codes
       when uBEQ | uBNE | uBLT | uBGE | uBLTU | uBGEU =>
         -- always load address from immediate on B-Type
-        X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAdr));
+        X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
         -- check for opcodes and evaluate condition
         s_pc_jump_enable <= s_branch_jump_enable;
       when others =>
         s_pc_jump_enable <= "0";
-        X_addr_calc      <= s_instAdr;
+        X_addr_calc      <= s_instAddr;
     end case;
   end process;
 
-  -- process ram 
+  -- process ram
   ram_input : process(s_opcode, s_cycle_cnt)
   begin
-    s_data_in_addr <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_reg_data1(11 downto 0)));
+    s_data_in_addr <= std_logic_vector(signed(s_immediate) + signed(s_reg_data1));
     if s_cycle_cnt = stWB then
       case s_opcode is
-        when uSB | uSH | uSW => s_ram_enable <= "1";
-        when others          => s_ram_enable <= "0";
+        when uSB | uSH | uSW => s_ram_enable <= '1';
+        when others          => s_ram_enable <= '0';
       end case;
     else
-      s_ram_enable <= "0";
+      s_ram_enable <= '0';
     end if;
   end process;
 
@@ -342,16 +317,11 @@ begin
   begin
     if rising_edge(s_clock) then
       case s_cycle_cnt is
-        when stIF => s_cycle_cnt <= stDEC;
-                     RGB2 <= "001";
-        when stDEC => s_cycle_cnt <= stOF;
-                      RGB2 <= "010";
-        when stOF => s_cycle_cnt <= stEXEC;
-                     RGB2 <= "011";
+        when stIF   => s_cycle_cnt <= stDEC;
+        when stDEC  => s_cycle_cnt <= stOF;
+        when stOF   => s_cycle_cnt <= stEXEC;
         when stEXEC => s_cycle_cnt <= stWB;
-                       RGB2 <= "100";
         when others => s_cycle_cnt <= stIF;
-                       RGB2 <= "101";
       end case;
     end if;
   end process pc_cycle_control;

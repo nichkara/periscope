@@ -29,8 +29,7 @@ entity registers is
         r2_idx       : in  reg_idx;     -- second register to read from
         write_enable : in  one_bit;     -- enable writing to wr_idx
         r1_out       : out word;        -- data from first register
-        r2_out       : out word;        -- data from second register
-        led_out      : out word         -- output reg 2 to led
+        r2_out       : out word         -- data from second register
         );
 end registers;
 
@@ -54,6 +53,5 @@ begin
     -- read from both reading registers
     r1_out  <= registerbench(to_integer(unsigned(r1_idx)));
     r2_out  <= registerbench(to_integer(unsigned(r2_idx)));
-    led_out <= registerbench(2);
 
 end structure;

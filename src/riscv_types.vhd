@@ -52,7 +52,7 @@ package riscv_types is
 
 
   -- constants for the 7bit opcode field in a normal 32bit instruction.
-  -- for 32bit size instructions the last 2 bits always have to be '1' 
+  -- for 32bit size instructions the last 2 bits always have to be '1'
   -- xxxxx11
   constant opc_LUI    : opcode := "0110111";  -- load upper immediate
   constant opc_AUIPC  : opcode := "0010111";  -- add upper immediate to pc
@@ -109,13 +109,12 @@ package riscv_types is
   type regFile is array (reg_size - 1 downto 0) of word;
 
   -- ram constants and type
-  constant ram_size       : natural := 4096;
-  constant ram_block_size : natural := 1024;
-  constant ram_addr_size  : natural := 12;
+  constant ram_size       : natural := 16384;
+  constant ram_block_size : natural := 4096;
+  constant ram_addr_size  : natural := 32;
 
   subtype ram_addr_t is std_logic_vector(ram_addr_size -1 downto 0);
-  -- type ram_t is array(0 to ram_addr_size - 1) of word;
-  type ram_t is array(0 to 255) of word;
+  type ram_t is array(0 to ram_block_size) of word;
 
   -- const for multiplexer sources
   constant mul_wr_alures  : two_bit := "00";

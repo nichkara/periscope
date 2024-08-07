@@ -1,8 +1,6 @@
 # Makefile for the different parts of the RISC-V COntroller
 # Project by
 # Yannick Reiß
-# Carl Ries
-# Alexander Graf
 
 # Variable section
 PARTS		=	ram regs alu decoder pc cpu
@@ -10,14 +8,14 @@ CHDL		=	ghdl
 FLAGS		=	--std=08
 REGSSRC		=	src/riscv_types.vhd src/registers.vhd tb/tb_reg.vhd
 ALUSRC		=	src/riscv_types.vhd src/alu.vhd tb/tb_alu.vhd
-RAMSRC		=	src/riscv_types.vhd src/ram_block.vhd src/imem.vhd src/ram_entity_only.vhd tb/tb_ram.vhd
+RAMSRC		=	src/riscv_types.vhd src/ram_block.vhd src/imem.vhd src/ram.vhd tb/tb_ram.vhd
 PCSRC		=	src/riscv_types.vhd src/pc.vhd tb/tb_pc.vhd
 DECSRC		=	src/riscv_types.vhd src/decoder.vhd tb/tb_decoder.vhd
-CPUSRC		=	src/riscv_types.vhd src/ram_block.vhd src/branch.vhd src/imem.vhd src/ram_entity_only.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd tb/tb_cpu.vhd
+CPUSRC		=	src/riscv_types.vhd src/ram_block.vhd src/branch.vhd src/imem.vhd src/ram.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd tb/tb_cpu.vhd
 ENTITY		=	regs_tb
 ALUENTITY	=	alu_tb
 PCENTITY	=	pc_tb
-STOP		=	9000ns
+STOP		=	100ns
 TBENCH 		=	alu_tb regs_tb
 
 # Build all 
@@ -40,7 +38,7 @@ alu : $(ALUSRC)
 	$(CHDL) -a $(FLAGS) $(ALUSRC)
 	$(CHDL) -e $(FLAGS) $(ALUENTITY) 
 	$(CHDL) -r $(FLAGS) $(ALUENTITY) --wave=$(ALUENTITY).ghw --stop-time=$(STOP)
-	
+
 # pc testbench
 pc : $(PCSRC)
 	$(CHDL) -a $(FLAGS) $(PCSRC)

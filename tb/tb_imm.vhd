@@ -13,8 +13,8 @@ library std;
 use std.textio.all;
 
 -- Entity imm_tb: dummy entity
-    entity imm_tb is
-    end imm_tb;
+entity imm_tb is
+end imm_tb;
 
 architecture testing of imm_tb is
 
@@ -32,10 +32,10 @@ architecture testing of imm_tb is
 begin
     uut : entity work.imm
         port map(
-            
-            instruction => s_instruction,
-            opcode      => s_opcode,
-            immediate   => s_immediate
+
+            instr     => s_instruction,
+            opcode    => s_opcode,
+            immediate => s_immediate
             );
 
     -- Process clk_process  operating the clock
@@ -65,10 +65,10 @@ begin
         s_opcode      <= uADDI;
 
         wait for 10 ns;
-        
+
         -- addi x2, x0, 1
         s_instruction <= x"00100113";
-        s_opcode <= uADDI;
+        s_opcode      <= uADDI;
 
         wait;
 
