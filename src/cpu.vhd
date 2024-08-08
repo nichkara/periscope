@@ -327,10 +327,9 @@ begin
         when stEXEC => s_cycle_cnt <= stWB;
         when others => s_cycle_cnt <= stIF;
       end case;
-    else
-      if falling_edge(reset) then
-        s_cycle_cnt <= stIF;
-      end if;
+    end if;
+    if falling_edge(reset) then
+      s_cycle_cnt <= stIF;
     end if;
   end process pc_cycle_control;
 

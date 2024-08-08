@@ -26,26 +26,22 @@ architecture pro_count of pc is
   signal addr_out      : ram_addr_t := (others => '0');
   signal addr_out_plus : ram_addr_t := (others => '0');
 begin
-  process (clk)
-  begin
-    if rising_edge(clk) then
-      if en_pc = "1" then
-        -- count 
-        if doJump = "1" then
-          addr_out <= addr_calc;
-        -- jump
-        else
-          addr_out <= addr_out_plus;
-        end if;
-      end if;
-    end if;
-  end process;
-
-  process (reset)
+  process (clk, reset)
   begin
     if falling_edge(reset) then
-      addr_out      <= (others => '0');
-      addr_out_plus <= (others => '0');
+      addr_out <= (others => '0');
+    else
+      if rising_edge(clk) then
+        if en_pc = "1" then
+          -- count 
+          if doJump = "1" then
+            addr_out <= addr_calc;
+          -- jump
+          else
+            addr_out <= addr_out_plus;
+          end if;
+        end if;
+      end if;
     end if;
   end process;
 
