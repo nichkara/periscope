@@ -40,23 +40,19 @@ architecture structure of registers is
 begin
 
     -- react only on clock changes
-    process (clk)                       -- runs only, when clk changed
-    begin
-        if rising_edge(clk) then
-            -- check if write is enabled
-            if to_integer(unsigned(write_enable)) = 1 then
-                -- write data_in to wr_idx
-                registerbench(to_integer(unsigned(wr_idx))) <= data_in;
-            end if;
-            registerbench(0) <= std_logic_vector(to_unsigned(0, wordWidth));
-        end if;
-    end process;
-
-    -- reset if reset is activated
-    process (reset)
+    process (clk, reset)                -- runs only, when clk changed
     begin
         if falling_edge(reset) then
             registerbench <= initRegs;
+        else
+            if rising_edge(clk) then
+                -- check if write is enabled
+                if to_integer(unsigned(write_enable)) = 1 then
+                    -- write data_in to wr_idx
+                    registerbench(to_integer(unsigned(wr_idx))) <= data_in;
+                end if;
+                registerbench(0) <= std_logic_vector(to_unsigned(0, wordWidth));
+            end if;
         end if;
     end process;
 
