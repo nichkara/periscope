@@ -22,6 +22,7 @@ entity registers is
     generic (initRegs : regFile := (others => (others => '0')));
     port(
         clk          : in  std_logic;   -- input for clock (control device)
+        reset        : in  std_logic;
         en_reg_wb    : in  one_bit;     -- enable register write back (?)
         data_in      : in  word;        -- Data to be written into the register
         wr_idx       : in  reg_idx;     -- register to write to
@@ -50,8 +51,17 @@ begin
             registerbench(0) <= std_logic_vector(to_unsigned(0, wordWidth));
         end if;
     end process;
+
+    -- reset if reset is activated
+    process (reset)
+    begin
+        if falling_edge(reset) then
+            registerbench <= initRegs;
+        end if;
+    end process;
+
     -- read from both reading registers
-    r1_out  <= registerbench(to_integer(unsigned(r1_idx)));
-    r2_out  <= registerbench(to_integer(unsigned(r2_idx)));
+    r1_out <= registerbench(to_integer(unsigned(r1_idx)));
+    r2_out <= registerbench(to_integer(unsigned(r2_idx)));
 
 end structure;

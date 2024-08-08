@@ -29,6 +29,7 @@ architecture implementation of cpu is
   component pc
     port(
       clk       : in  std_logic;        -- Clock input for timing
+      reset     : in  std_logic;
       en_pc     : in  one_bit;          -- activates PC
       addr_calc : in  ram_addr_t;       -- Address from ALU
       doJump    : in  one_bit;          -- Jump to Address
@@ -66,6 +67,7 @@ architecture implementation of cpu is
   component registers
     port(
       clk          : in  std_logic;     -- input for clock (control device)
+      reset        : in  std_logic;
       en_reg_wb    : in  one_bit;       -- enable register write back (?)
       data_in      : in  word;          -- Data to be written into the register
       wr_idx       : in  reg_idx;       -- register to write to
@@ -133,8 +135,8 @@ architecture implementation of cpu is
   signal X_addr_calc : ram_addr_t;
 
   -- Clock signals
-  signal reset  : std_logic;
-  signal locked : std_logic;
+  signal reset  : std_logic := '0';
+  signal locked : std_logic := '0';
 
 -------------------------
 -- additional ALU signals
@@ -151,6 +153,7 @@ begin
 
   -- External assignments
   s_clock             <= clk;
+  reset               <= rst;
   ram_enable_writing  <= s_ram_enable;
   instruction_pointer <= s_instAddr;
   data_address        <= s_data_in_addr;
@@ -170,6 +173,7 @@ begin
   registers_RISCV : registers
     port map(
       clk          => s_clock,
+      reset        => reset,
       en_reg_wb    => s_reg_wb_enable,
       data_in      => reg_data_in,
       wr_idx       => s_idx_wr,
@@ -190,6 +194,7 @@ begin
   pc_RISCV : pc
     port map(
       clk       => s_clock,
+      reset     => reset,
       en_pc     => s_pc_enable,
       addr_calc => X_addr_calc,
       doJump    => s_pc_jump_enable,
@@ -243,7 +248,6 @@ begin
       when others => aluIn1 <= s_reg_data1;
     end case;
 
-    -- TODO: why line from pc to alu inp1?
     -- connect input 2
     case s_opcode is
       when uADDI | uSLTI | uSLTIU | uXORI | uORI | uANDI => aluIn2 <= s_immediate;
@@ -313,7 +317,7 @@ begin
   end process;
 
   -- pc cycle control
-  pc_cycle_control : process(s_clock)
+  pc_cycle_control : process(s_clock, reset)
   begin
     if rising_edge(s_clock) then
       case s_cycle_cnt is
@@ -323,6 +327,10 @@ begin
         when stEXEC => s_cycle_cnt <= stWB;
         when others => s_cycle_cnt <= stIF;
       end case;
+    else
+      if falling_edge(reset) then
+        s_cycle_cnt <= stIF;
+      end if;
     end if;
   end process pc_cycle_control;
 

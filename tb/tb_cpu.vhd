@@ -13,10 +13,8 @@ end cpu_tb;
 
 architecture Behavioral of cpu_tb is
 
-  -- Clock
+  -- Clock and Reset
   signal clk : std_logic;
-
-  -- Inputs
 
   -- Outputs
   -- Clock period definitions
@@ -75,6 +73,11 @@ begin
   begin
     write(lineBuffer, string'("Start the simulator"));
     writeline(output, lineBuffer);
+
+    wait for 100 ns;
+    cpu_reset <= '1';
+    wait for 17 ns;
+    cpu_reset <= '0';
 
     wait;
   end process;
