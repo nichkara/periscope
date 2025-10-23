@@ -19,7 +19,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apt-get install -y make ghdl-gcc
+        apt-get install -y make ghdl-gcc ghdl-tools
 
     - name: run ram testbench
       run: |
