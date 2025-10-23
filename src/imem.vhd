@@ -37,13 +37,13 @@ begin
     begin
         if rising_edge(clk) then
 
-            if write_b = '1' and (unsigned(addr_b) > 65536) then
-                store(to_integer(unsigned(addr_b(9 downto 2)))) <= data_write_b;
+            if write_b = '1' and (unsigned(addr_b) > 32768) then
+                store(to_integer(unsigned(addr_b(14 downto 2)))) <= data_write_b;
             end if;
 
             -- Two synchron read ports
-            data_read_a                                         <= store(to_integer(unsigned(addr_a(ram_addr_size - 3 downto 2))));
-            data_read_b                                         <= store(to_integer(unsigned(addr_b(ram_addr_size - 3 downto 2))));
+            data_read_a                                          <= store(to_integer(unsigned(addr_a(14 downto 2))));
+            data_read_b                                          <= store(to_integer(unsigned(addr_b(14 downto 2))));
 
         end if;
     end process synchron_rw;
