@@ -31,7 +31,7 @@ ram: $(RAMSRC)
 regs: $(REGSSRC)
 	$(CHDL) -a $(FLAGS) $(REGSSRC)
 	$(CHDL) -e $(FLAGS) $(ENTITY)
-	$(CHDL) -r $(FLAGS) $(ENTITY) --wave=$(ENTITY).ghw --stop-time=$(STOP)
+	$(CHDL) -r $(FLAGS) $(ENTITY) --wave=$(ENTITY).ghw
 
 # alu testbench
 alu : $(ALUSRC)

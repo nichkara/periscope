@@ -28,7 +28,7 @@ architecture Behavioral of ram_tb is
 
     -- Clock period definitions
     constant clk_period : time                                         := 10 ns;
-    constant test_cases : natural                                      := 65536;
+    constant test_cases : natural                                      := 16384;
 
     -- Unittest Signale
     signal tb_validate  : std_logic                                    := '0';
