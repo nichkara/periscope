@@ -25,7 +25,7 @@ all: $(PARTS)
 ram: $(RAMSRC)
 	$(CHDL) -a $(FLAGS) $(RAMSRC)
 	$(CHDL) -e $(FLAGS) ram_tb
-	$(CHDL) -r $(FLAGS) ram_tb --wave=ram_tb.ghw 
+	$(CHDL) -r $(FLAGS) ram_tb
 
 # registerbank testbench
 regs: $(REGSSRC)
