@@ -24,3 +24,7 @@ jobs:
     - name: run ram testbench
       run: |
         make ram
+
+    - name: run register testbench
+      run: |
+        make regs
