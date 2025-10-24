@@ -31,13 +31,16 @@ ram: $(RAMSRC)
 regs: $(REGSSRC)
 	$(CHDL) -a $(FLAGS) $(REGSSRC)
 	$(CHDL) -e $(FLAGS) $(ENTITY)
-	$(CHDL) -r $(FLAGS) $(ENTITY) --wave=$(ENTITY).ghw
+	$(CHDL) -r $(FLAGS) $(ENTITY)
 
 # alu testbench
 alu : $(ALUSRC)
+	$(CC) -o alu_tb -Werror tb/alu.c
+	./alu_tb > tb/tb_alu.vhd
+	rm ./alu_tb
 	$(CHDL) -a $(FLAGS) $(ALUSRC)
 	$(CHDL) -e $(FLAGS) $(ALUENTITY)
-	$(CHDL) -r $(FLAGS) $(ALUENTITY) --wave=$(ALUENTITY).ghw --stop-time=$(STOP)
+	$(CHDL) -r $(FLAGS) $(ALUENTITY)
 
 # pc testbench
 pc : $(PCSRC)
