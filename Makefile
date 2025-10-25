@@ -42,12 +42,6 @@ alu :
 	$(CHDL) -e $(FLAGS) $(ALUENTITY)
 	$(CHDL) -r $(FLAGS) $(ALUENTITY) --wave=testbench.ghw
 
-# pc testbench
-pc : $(PCSRC)
-	$(CHDL) -a $(FLAGS) $(PCSRC)
-	$(CHDL) -e $(FLAGS) $(PCENTITY)
-	$(CHDL) -r $(FLAGS) $(PCENTITY) --wave=$(PCENTITY).ghw --stop-time=$(STOP)
-
 # decoder compilecheck
 decoder:	$(DECSRC)
 	$(CHDL) -a $(FLAGS) $(DECSRC)
