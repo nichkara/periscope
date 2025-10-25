@@ -35,12 +35,12 @@ regs: $(REGSSRC)
 
 # alu testbench
 alu : $(ALUSRC)
-	$(CC) -o alu_tb -Werror tb/alu.c
+	$(CC) -o alu_tb -Wall -Werror tb/tb_alu.c
 	./alu_tb > tb/tb_alu.vhd
 	rm ./alu_tb
 	$(CHDL) -a $(FLAGS) $(ALUSRC)
 	$(CHDL) -e $(FLAGS) $(ALUENTITY)
-	$(CHDL) -r $(FLAGS) $(ALUENTITY)
+	$(CHDL) -r $(FLAGS) $(ALUENTITY) --wave=testbench.ghw
 
 # pc testbench
 pc : $(PCSRC)

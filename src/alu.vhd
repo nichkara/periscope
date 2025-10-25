@@ -22,41 +22,43 @@ architecture implementation of alu is
 
 begin
     -- Process log  that fetches the opcode and executes it
-    log: process (alu_opc, input1, input2) is                                                                               -- runs only, when all changed
+    log: process (alu_opc, input1, input2) is                                                                  -- runs only, when all changed
     begin
         case alu_opc is
             when uNOP =>
-                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                                  -- no operations
+                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                     -- no operations
             when uADD =>
-                result     <= std_logic_vector(unsigned(input1) + unsigned(input2));                                        -- addition
+                result     <= std_logic_vector(unsigned(input1) + unsigned(input2));                           -- addition
             when uSUB =>
-                result     <= std_logic_vector(signed(input1) - signed(input2));                                            -- subtraction
+                result     <= std_logic_vector(signed(input1) - signed(input2));                               -- subtraction
             when uSLL =>
-                result     <= std_logic_vector(unsigned(input1) sll 1);                                                     -- shift left logical
+                result     <= std_logic_vector(unsigned(input1) sll to_integer(unsigned(input2(4 downto 0)))); -- shift left logical
             when uSLT =>
                 if (signed(input1) < signed(input2)) then
                     result <= std_logic_vector(to_unsigned(1, wordWidth));
                 else
                     result <= std_logic_vector(to_unsigned(0, wordWidth));
-                end if;                                                                                                     -- Set lower than
+                end if;                                                                                        -- Set lower than
             when uSLTU =>
                 if (unsigned(input1) < unsigned(input2)) then
                     result <= std_logic_vector(to_unsigned(1, wordWidth));
                 else
                     result <= std_logic_vector(to_unsigned(0, wordWidth));
-                end if;                                                                                                     -- Set lower than unsigned
+                end if;                                                                                        -- Set lower than unsigned
             when uXOR =>
-                result     <= input1 xor input2;                                                                            -- exclusive or
+                result     <= input1 xor input2;                                                               -- exclusive or
             when uSRL =>
-                result     <= std_logic_vector(unsigned(input1) srl 1);                                                     -- shift right logical
+                result     <= std_logic_vector(unsigned(input1) srl to_integer(unsigned(input2(4 downto 0)))); -- shift right logical
             when uSRA =>
-                result     <= (input1 and b"10000000000000000000000000000000") or std_logic_vector(unsigned(input1) srl 1); -- shift right arithmetic
+                result     <=
+                    (input1 and b"10000000000000000000000000000000") or std_logic_vector(unsigned(input1) srl
+                        to_integer(unsigned(input2(4 downto 0))));                                             -- shift right arithmetic
             when uOR =>
-                result     <= input1 or input2;                                                                             -- or
+                result     <= input1 or input2;                                                                -- or
             when uAND =>
-                result     <= input1 and input2;                                                                            -- and
+                result     <= input1 and input2;                                                               -- and
             when others =>
-                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                                  -- other operations return zero
+                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                     -- other operations return zero
         end case;
     end process log;
 end architecture implementation;
