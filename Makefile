@@ -54,12 +54,6 @@ cpu:	$(CPUSRC)
 	$(CHDL) -e $(FLAGS) cpu_tb
 	$(CHDL) -r $(FLAGS) cpu_tb --wave=cpu.ghw --stop-time=60000ns
 
-# imm compilecheck
-imm:	src/imm.vhd
-	$(CHDL) -a $(FLAGS) src/riscv_types.vhd src/imm.vhd tb/tb_imm.vhd
-	$(CHDL) -e $(FLAGS) imm_tb
-	$(CHDL) -r $(FLAGS) imm_tb --wave=imm.ghw --stop-time=600ns
-
 # project rules
 clean:
 	find . -name '*.o' -exec rm -r {} \;
