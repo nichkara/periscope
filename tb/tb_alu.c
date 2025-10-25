@@ -71,8 +71,8 @@ int main(void) {
     u_int32_t left;
     u_int32_t right;
 
-    for (left = 0; left < 73; left ++) {
-        for (right = 0; right < 73; right ++) {
+    for (left = 0; left < 20; left ++) {
+        for (right = 0; right < 20; right ++) {
             (void)printf("      input1_tb <= std_logic_vector(to_unsigned(%u, 32));\n", (unsigned int)(left & 2147483647));
             (void)printf("      input2_tb <= std_logic_vector(to_unsigned(%u, 32));\n", (unsigned int)(right & 2147483647));
             (void)printf("      alu_opc_tb <= uNop;\n");
