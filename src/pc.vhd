@@ -1,51 +1,45 @@
 -- pc.vhd
 -- Created on: Mo 05. Dec 14:21:39 CET 2022
--- Author(s): Carl Ries, Yannick Reiß, Alexander Graf
+-- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: program counter
 library IEEE;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
 use work.riscv_types.all;
 
 -- Entity PC: entity defining the pins and ports of the programmcounter
 entity pc is
-  port (clk       : in  std_logic;      -- Clock input for timing
-        reset     : in  std_logic;
-        en_pc     : in  one_bit;        -- activates PC
-        addr_calc : in  ram_addr_t;     -- Address from ALU
-        doJump    : in  one_bit;        -- Jump to Address
-        addr      : out ram_addr_t      -- Address to Decoder
-        );
+    port (
+        clk         : in  std_logic; -- Clock input for timing
+        reset       : in  std_logic;
+        en_pc       : in  std_logic; -- activates PC
+        doJump      : in  std_logic; -- Jump to Address
+        addr_calc   : in  ram_addr_t; -- Address from ALU
+        jump_offset : in  ram_addr_t; -- Jump offset
+        addr        : out ram_addr_t -- Address to Decoder
+    );
 
-end PC;
+end entity pc;
 
 
 architecture pro_count of pc is
-  signal addr_out      : ram_addr_t := (others => '0');
-  signal addr_out_plus : ram_addr_t := (others => '0');
+    signal status : std_logic_vector(2 downto 0) := (reset & en_pc & doJump);
 begin
-  process (clk, reset)
-  begin
-    if falling_edge(reset) then
-      addr_out <= (others => '0');
-    else
-      if rising_edge(clk) then
-        if en_pc = "1" then
-          -- count 
-          if doJump = "1" then
-            addr_out <= addr_calc;
-          -- jump
-          else
-            addr_out <= addr_out_plus;
-          end if;
+    process (clk, reset) is
+    begin
+        if rising_edge(clk) then
+            case status is
+                when "110" | "111" =>
+                    addr <= (others => '0');
+                when "011" =>
+                    addr <= std_logic_vector(signed(addr_calc) + signed(jump_offset));
+                when "010" =>
+                    addr <= std_logic_vector(unsigned(addr_calc) + 4);
+                when others =>
+                    addr <= addr_calc;
+            end case;
         end if;
-      end if;
-    end if;
-  end process;
+    end process;
 
-  addr_out_plus <= (std_logic_vector(to_unsigned(to_integer(unsigned(addr_out)) + 4, ram_addr_size)));
-  addr          <= addr_out;
-
-end pro_count;
+end architecture pro_count;
