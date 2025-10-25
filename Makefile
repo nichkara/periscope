@@ -34,7 +34,7 @@ regs: $(REGSSRC)
 	$(CHDL) -r $(FLAGS) $(ENTITY)
 
 # alu testbench
-alu : $(ALUSRC)
+alu :
 	$(CC) -o alu_tb -Wall -Werror tb/tb_alu.c
 	./alu_tb > tb/tb_alu.vhd
 	rm ./alu_tb
