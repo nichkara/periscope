@@ -11,20 +11,20 @@ use work.riscv_types.all;
 -- Entity PC: entity defining the pins and ports of the programmcounter
 entity pc is
     port (
-        clk         : in  std_logic; -- Clock input for timing
+        clk         : in  std_logic;
         reset       : in  std_logic;
-        en_pc       : in  std_logic; -- activates PC
-        doJump      : in  std_logic; -- Jump to Address
-        addr_calc   : in  ram_addr_t; -- Address from ALU
-        jump_offset : in  ram_addr_t; -- Jump offset
-        addr        : out ram_addr_t -- Address to Decoder
+        en_pc       : in  std_logic;
+        doJump      : in  std_logic;
+        addr_calc   : in  ram_addr_t;
+        jump_offset : in  ram_addr_t;
+        addr        : out ram_addr_t
     );
 
 end entity pc;
 
 
 architecture pro_count of pc is
-    signal status : std_logic_vector(2 downto 0) := (reset & en_pc & doJump);
+    signal status : std_logic_vector(2 downto 0);
 begin
     process (clk, reset) is
     begin
@@ -41,5 +41,7 @@ begin
             end case;
         end if;
     end process;
+
+    status               <= (reset & en_pc & doJump);
 
 end architecture pro_count;

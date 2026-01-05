@@ -12,6 +12,7 @@ entity ram is
 
     port (
         clk             : in  std_logic; -- Clock input for timing
+        reset_n         : in  std_logic;
         instructionAddr : in  ram_addr_t; -- Address instruction
         dataAddr        : in  ram_addr_t; -- Address data
         writeEnable     : in  std_logic; -- Read or write mode
@@ -24,10 +25,10 @@ end entity ram;
 -- Architecture behavioral of ram: control different ram blocks
 architecture behavioral of ram is
     -- write signals
-    signal wr1   : std_logic := '0';
-    signal wr2   : std_logic := '0';
-    signal wr3   : std_logic := '0';
-    signal wr4   : std_logic := '0';
+    signal wr1   : std_logic;
+    signal wr2   : std_logic;
+    signal wr3   : std_logic;
+    signal wr4   : std_logic;
 
     -- instruction signals
     signal inst1 : std_logic_vector(wordWidth - 1 downto 0);
@@ -58,6 +59,7 @@ begin
     block2: entity work.ram_block(behavioral)
     port map (
         clk          => clk,
+        reset_n      => reset_n,
         addr_a       => instructionAddr(ram_addr_size - 3 downto 0),
         write_b      => wr2,
         addr_b       => dataAddr(ram_addr_size - 3 downto 0),
@@ -70,6 +72,7 @@ begin
     block3: entity work.ram_block(behavioral)
     port map (
         clk          => clk,
+        reset_n      => reset_n,
         addr_a       => instructionAddr(ram_addr_size - 3 downto 0),
         write_b      => wr3,
         addr_b       => dataAddr(ram_addr_size - 3 downto 0),
@@ -82,6 +85,7 @@ begin
     block4: entity work.ram_block(behavioral)
     port map (
         clk          => clk,
+        reset_n      => reset_n,
         addr_a       => instructionAddr(ram_addr_size - 3 downto 0),
         write_b      => wr4,
         addr_b       => dataAddr(ram_addr_size - 3 downto 0),

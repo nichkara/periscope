@@ -12,7 +12,7 @@ use work.riscv_types.all;
 entity cpu is
     port (
         clk                 : in  std_logic; -- clk to control the unit
-        rst                 : in  std_logic;
+        rst_n               : in  std_logic;
         instruction_read    : in  word;
         ram_read_data       : in  word;
         ram_enable_writing  : out std_logic;
@@ -27,12 +27,13 @@ architecture implementation of cpu is
 
     component pc is
         port (
-            clk       : in  std_logic;                                              -- Clock input for timing
-            reset     : in  std_logic;
-            en_pc     : in  one_bit;                                                -- activates PC
-            addr_calc : in  ram_addr_t;                                             -- Address from ALU
-            doJump    : in  one_bit;                                                -- Jump to Address
-            addr      : out ram_addr_t                                              -- Address to Decoder
+            clk         : in  std_logic;
+            reset       : in  std_logic;
+            en_pc       : in  std_logic;
+            doJump      : in  std_logic;
+            addr_calc   : in  ram_addr_t;
+            jump_offset : in  ram_addr_t;
+            addr        : out ram_addr_t
         );
     end component pc;
 
@@ -47,19 +48,20 @@ architecture implementation of cpu is
 
     component decoder is
         port (
-            instrDecode : in  instruction;                                          -- Instruction from instruction memory
-            op_code     : out uOP;                                                  -- alu opcode
-            regOp1      : out reg_idx;                                              -- Rj: first register to read
-            regOp2      : out reg_idx;                                              -- Rk: second register to read
-            regWrite    : out reg_idx                                               -- Ri: the register to write to
+            instrDecode      : in  instruction;
+            op_code          : out uOP;
+            immediate_format : out imm_formats;
+            regOp1           : out reg_idx;
+            regOp2           : out reg_idx;
+            regWrite         : out reg_idx
         );
     end component decoder;
 
     component imm is
         port (
-            instr     : in  instruction;
-            opcode    : in  uOP;
-            immediate : out word
+            instr       : in  instruction;
+            format_type : in  imm_formats;
+            immediate   : out word
         );
     end component imm;
 
@@ -67,12 +69,11 @@ architecture implementation of cpu is
         port (
             clk          : in  std_logic;                                           -- input for clock (control device)
             reset        : in  std_logic;
-            en_reg_wb    : in  one_bit;                                             -- enable register write back (?)
             data_in      : in  word;                                                -- Data to be written into the register
             wr_idx       : in  reg_idx;                                             -- register to write to
             r1_idx       : in  reg_idx;                                             -- first register to read from
             r2_idx       : in  reg_idx;                                             -- second register to read from
-            write_enable : in  one_bit;                                             -- enable writing to wr_idx
+            write_enable : in  std_logic;                                           -- enable writing to wr_idx
             r1_out       : out word;                                                -- data from first register
             r2_out       : out word                                                 -- data from second register
         );
@@ -83,17 +84,17 @@ architecture implementation of cpu is
             op_code    : in  uOP;
             reg1       : in  word;
             reg2       : in  word;
-            jmp_enable : out one_bit
+            jmp_enable : out std_logic
         );
     end component Branch;
 
     -- SIGNALS GLOBAL
-    signal s_clock              : std_logic := '0';
-    signal s_reg_wb_enable      : one_bit   := "0";                                 --enables: register writeback
-    signal s_reg_wr_enable      : one_bit   := "0";                                 --enables: register write to index
-    signal s_pc_enable          : one_bit   := "0";                                 --enables: pc
-    signal s_pc_jump_enable     : one_bit   := "0";                                 --enables: pc jump to address
-    signal s_ram_enable         : std_logic := '0';                                 --enables: ram write enalbe
+    signal s_clock              : std_logic;
+    signal s_reg_wb_enable      : std_logic;                                        --enables: register writeback
+    signal s_reg_wr_enable      : std_logic;                                        --enables: register write to index
+    signal s_pc_enable          : std_logic;                                        --enables: pc
+    signal s_pc_jump_enable     : std_logic;                                        --enables: pc jump to address
+    signal s_ram_enable         : std_logic;                                        --enables: ram write enable
 
     -- decoder -> registers
     signal s_idx_1              : reg_idx;
@@ -109,8 +110,8 @@ architecture implementation of cpu is
 
     -- pc -> ram
     signal s_instAddr           : ram_addr_t;
-    signal s_cycle_cnt          : cpuStates := stIF;
-    signal s_branch_jump_enable : one_bit;
+    signal s_cycle_cnt          : cpuStates;
+    signal s_branch_jump_enable : std_logic;
 
     -- alu -> ram + register
     signal s_alu_data           : word;
@@ -126,6 +127,7 @@ architecture implementation of cpu is
 
     --imm -> ???
     signal s_immediate          : word;
+    signal s_format_type        : imm_formats;
 
     -- ???   -> alu
     signal X_aluOP              : aluOP;
@@ -134,7 +136,7 @@ architecture implementation of cpu is
     signal X_addr_calc          : ram_addr_t;
 
     -- Clock signals
-    signal reset                : std_logic := '0';
+    signal reset                : std_logic;
 
     -------------------------
     -- additional ALU signals
@@ -150,69 +152,70 @@ architecture implementation of cpu is
 begin
 
     -- External assignments
-    s_clock                         <= clk;
-    reset                           <= rst;
-    ram_enable_writing              <= s_ram_enable;
-    instruction_pointer             <= s_instAddr;
-    data_address                    <= s_data_in_addr;
-    ram_write_data                  <= s_alu_data;
-    s_inst                          <= instruction_read;
-    s_ram_data                      <= ram_read_data;
+    s_clock                          <= clk;
+    reset                            <= rst_n;
+    ram_enable_writing               <= s_ram_enable;
+    instruction_pointer              <= s_instAddr;
+    data_address                     <= s_data_in_addr;
+    ram_write_data                   <= s_alu_data;
+    s_inst                           <= instruction_read;
+    s_ram_data                       <= ram_read_data;
 
     decoder_RISCV: component decoder
     port map (
-        instrDecode  => s_inst,
-        op_code      => s_opcode,
-        regOp1       => s_idx_1,
-        regOp2       => s_idx_2,
-        regWrite     => s_idx_wr
+        instrDecode      => s_inst,
+        op_code          => s_opcode,
+        immediate_format => s_format_type,
+        regOp1           => s_idx_1,
+        regOp2           => s_idx_2,
+        regWrite         => s_idx_wr
     );
 
     registers_RISCV: component registers
     port map (
-        clk          => s_clock,
-        reset        => reset,
-        en_reg_wb    => s_reg_wb_enable,
-        data_in      => reg_data_in,
-        wr_idx       => s_idx_wr,
-        r1_idx       => s_idx_1,
-        r2_idx       => s_idx_2,
-        write_enable => s_reg_wr_enable,
-        r1_out       => s_reg_data1,
-        r2_out       => s_reg_data2
+        clk              => s_clock,
+        reset            => reset,
+        data_in          => reg_data_in,
+        wr_idx           => s_idx_wr,
+        r1_idx           => s_idx_1,
+        r2_idx           => s_idx_2,
+        write_enable     => s_reg_wr_enable,
+        r1_out           => s_reg_data1,
+        r2_out           => s_reg_data2
     );
 
     imm_RISCV: component imm
     port map (
-        instr        => s_inst,
-        opcode       => s_opcode,
-        immediate    => s_immediate
+        instr            => s_inst,
+        format_type      => s_format_type,
+        immediate        => s_immediate
     );
 
     pc_RISCV: component pc
     port map (
-        clk          => s_clock,
-        reset        => reset,
-        en_pc        => s_pc_enable,
-        addr_calc    => X_addr_calc,
-        doJump       => s_pc_jump_enable,
-        addr         => s_instAddr
+        clk              => s_clock,
+        reset            => reset,
+        en_pc            => s_pc_enable,
+        doJump           => s_pc_jump_enable,
+        addr_calc        => X_addr_calc,
+        jump_offset      => s_immediate,
+        addr             => s_instAddr
     );
 
     alu_RISCV: component alu
     port map (
-        alu_opc      => X_aluOP,                                                    -- switch case from s_opcode
-        input1       => aluIn1,
-        input2       => aluIn2,
-        result       => s_alu_data
+        alu_opc          => X_aluOP,                                                -- switch case from s_opcode
+        input1           => aluIn1,
+        input2           => aluIn2,
+        result           => s_alu_data
     );
 
     branch_RISCV: component Branch
     port map (
-        op_code      => s_opcode,
-        reg1         => aluIn1,
-        reg2         => aluIn2,
-        jmp_enable   => s_branch_jump_enable
+        op_code          => s_opcode,
+        reg1             => aluIn1,
+        reg2             => aluIn2,
+        jmp_enable       => s_branch_jump_enable
     );
 
     ------------------------
@@ -229,107 +232,110 @@ begin
         -- Connect opcode
         case s_opcode is
             when uADD | uADDI =>
-                X_aluOP             <= uADD;
+                X_aluOP              <= uADD;
             when uSUB =>
-                X_aluOP             <= uSUB;
+                X_aluOP              <= uSUB;
             when uSLL | uSLLI =>
-                X_aluOP             <= uSLL;
+                X_aluOP              <= uSLL;
             when uSLT | uSLTI =>
-                X_aluOP             <= uSLT;
+                X_aluOP              <= uSLT;
             when uSLTU | uSLTIU =>
-                X_aluOP             <= uSLTU;
+                X_aluOP              <= uSLTU;
             when uXOR | uXORI =>
-                X_aluOP             <= uXOR;
+                X_aluOP              <= uXOR;
             when uSRL | uSRLI =>
-                X_aluOP             <= uSRL;
+                X_aluOP              <= uSRL;
             when uSRA | uSRAI =>
-                X_aluOP             <= uSRA;
+                X_aluOP              <= uSRA;
             when uOR | uORI =>
-                X_aluOP             <= uOR;
+                X_aluOP              <= uOR;
             when uAND | uANDI =>
-                X_aluOP             <= uAND;
+                X_aluOP              <= uAND;
             when others =>
-                X_aluOP             <= uNOP;
+                X_aluOP              <= uNOP;
         end case;
         -- connect input1
         case s_opcode is
                 -- add nonstandard inputs for aluIn1 here
             when others =>
-                aluIn1              <= s_reg_data1;
+                aluIn1               <= s_reg_data1;
         end case;
 
         -- connect input 2
         case s_opcode is
             when uADDI | uSLTI | uSLTIU | uXORI | uORI | uANDI =>
-                aluIn2              <= s_immediate;
+                aluIn2               <= s_immediate;
             when others =>
-                aluIn2              <= s_reg_data2;                                 -- use rs2 as default
+                aluIn2               <= s_reg_data2;                                -- use rs2 as default
         end case;
     end process alu_control;
 
     -- Process register_data_input  select which input is needed for register
     register_data_input: process (s_cycle_cnt, s_opcode, s_ram_data, s_alu_data) is -- runs only, when item in list changed
     begin
-        s_reg_wb_enable             <= "0";
+        s_reg_wb_enable              <= '0';
         case s_opcode is
             when uBEQ | uBNE | uBLT | uBGE | uBLTU | uBGEU | uSB | uSH | uSW | uECALL | uNOP =>
-                s_reg_wr_enable     <= "0";
+                s_reg_wr_enable      <= '0';
             when others =>
                 if s_cycle_cnt = stEXEC then
-                    s_reg_wr_enable <= "1";
+                    s_reg_wr_enable  <= '1';
                 else
-                    s_reg_wr_enable <= "0";
+                    s_reg_wr_enable  <= '0';
                 end if;
         end case;
 
         case s_opcode is
             when uLB | uLH | uLW | uLBU | uLHU =>
-                reg_data_in         <= s_ram_data;                                  -- use value from
+                reg_data_in          <= s_ram_data;                                 -- use value from
                 -- RAM (Load instructions)
             when others =>
-                reg_data_in         <= s_alu_data;                                  -- alu operations as default
+                reg_data_in          <= s_alu_data;                                 -- alu operations as default
         end case;
     end process register_data_input;
 
     -- Process pc input
-    pc_addr_input: process (s_opcode, s_cycle_cnt, s_instAddr, s_immediate) is
+    pc_addr_input: process (s_opcode, s_cycle_cnt, s_instAddr, s_immediate, s_branch_jump_enable) is
     begin
-        if s_cycle_cnt = stWB then
-            s_pc_enable             <= "1";
+        if reset = '0' then
+            X_addr_calc              <= (others => '0');
         else
-            s_pc_enable             <= "0";
-            -- X_addr_calc <= s_instAddr; -- should not be necessary, every case option sets X_addr_calc
-        end if;
-        case s_opcode is
-            when uJALR | uJAL =>
-                s_pc_jump_enable    <= "1";
-                X_addr_calc         <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
+            if s_cycle_cnt = stWB then
+                s_pc_enable          <= '1';
+            else
+                s_pc_enable          <= '0';
+            end if;
+            case s_opcode is
+                when uJALR | uJAL =>
+                    s_pc_jump_enable <= '1';
+                    X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
 
-                -- Branch op_codes
-            when uBEQ | uBNE | uBLT | uBGE | uBLTU | uBGEU =>
-                -- always load address from immediate on B-Type
-                X_addr_calc         <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
-                -- check for opcodes and evaluate condition
-                s_pc_jump_enable    <= s_branch_jump_enable;
-            when others =>
-                s_pc_jump_enable    <= "0";
-                X_addr_calc         <= s_instAddr;
-        end case;
+                    -- Branch op_codes
+                when uBEQ | uBNE | uBLT | uBGE | uBLTU | uBGEU =>
+                    -- always load address from immediate on B-Type
+                    X_addr_calc      <= std_logic_vector(signed(s_immediate(11 downto 0)) + signed(s_instAddr));
+                    -- check for opcodes and evaluate condition
+                    s_pc_jump_enable <= s_branch_jump_enable;
+                when others =>
+                    s_pc_jump_enable <= '0';
+                    X_addr_calc      <= s_instAddr;
+            end case;
+        end if;
     end process pc_addr_input;
 
     -- process ram
-    ram_input: process (all) is
+    ram_input: process (s_immediate, s_cycle_cnt, s_opcode, s_reg_data1) is
     begin
-        s_data_in_addr              <= std_logic_vector(signed(s_immediate) + signed(s_reg_data1));
+        s_data_in_addr               <= std_logic_vector(signed(s_immediate) + signed(s_reg_data1));
         if s_cycle_cnt = stWB then
             case s_opcode is
                 when uSB | uSH | uSW =>
-                    s_ram_enable    <= '1';
+                    s_ram_enable     <= '1';
                 when others =>
-                    s_ram_enable    <= '0';
+                    s_ram_enable     <= '0';
             end case;
         else
-            s_ram_enable            <= '0';
+            s_ram_enable             <= '0';
         end if;
     end process ram_input;
 
@@ -339,19 +345,16 @@ begin
         if rising_edge(s_clock) then
             case s_cycle_cnt is
                 when stIF =>
-                    s_cycle_cnt     <= stDEC;
+                    s_cycle_cnt      <= stDEC;
                 when stDEC =>
-                    s_cycle_cnt     <= stOF;
+                    s_cycle_cnt      <= stOF;
                 when stOF =>
-                    s_cycle_cnt     <= stEXEC;
+                    s_cycle_cnt      <= stEXEC;
                 when stEXEC =>
-                    s_cycle_cnt     <= stWB;
+                    s_cycle_cnt      <= stWB;
                 when others =>
-                    s_cycle_cnt     <= stIF;
+                    s_cycle_cnt      <= stIF;
             end case;
-        end if;
-        if falling_edge(reset) then
-            s_cycle_cnt             <= stIF;
         end if;
     end process pc_cycle_control;
 

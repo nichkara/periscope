@@ -19,6 +19,7 @@ entity ram_block is
 
     port (
         clk          : in  std_logic;
+        reset_n      : in  std_logic;
         addr_a       : in  std_logic_vector(ram_addr_size - 3 downto 0);
         data_read_a  : out std_logic_vector(wordWidth - 1 downto 0);
         write_b      : in  std_logic;
@@ -31,7 +32,7 @@ end entity ram_block;
 
 architecture behavioral of ram_block is
 
-    signal store : ram_t := initMem;
+    signal store : ram_t;
 
 begin
 
@@ -39,13 +40,17 @@ begin
     begin
         if rising_edge(clk) then
 
-            if write_b = '1' then
-                store(to_integer(unsigned(addr_b(ram_addr_size - 3 downto 2)))) <= data_write_b;
+            if reset_n = '0' then
+                store                                                               <= initMem;
+            else
+                if write_b = '1' then
+                    store(to_integer(unsigned(addr_b(ram_addr_size - 3 downto 2)))) <= data_write_b;
+                end if;
+
+                data_read_a                                                         <= store(to_integer(unsigned(addr_a(ram_addr_size - 3 downto 2))));
+                data_read_b                                                         <= store(to_integer(unsigned(addr_b(ram_addr_size - 3 downto 2))));
+
             end if;
-
-            data_read_a                                                         <= store(to_integer(unsigned(addr_a(ram_addr_size - 3 downto 2))));
-            data_read_b                                                         <= store(to_integer(unsigned(addr_b(ram_addr_size - 3 downto 2))));
-
         end if;
     end process;
 

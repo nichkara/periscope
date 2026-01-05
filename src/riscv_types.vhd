@@ -59,7 +59,7 @@ package riscv_types is
     type inst_formats is (R, I, S, B, U, J);
 
     -- internal immediat formats
-    type imm_formats is (I, S, B, U, J);
+    type imm_formats is (I, S, B, U, J, None);
 
     -- cpu states
     type cpuStates is (stIF, stDEC, stOF, stEXEC, stWB);

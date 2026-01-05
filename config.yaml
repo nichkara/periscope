@@ -1,0 +1,8 @@
+meta:
+  flow: VHDLClassic
+
+DESIGN_NAME: cpu
+VHDL_FILES: dir::src/*.vhd
+CLOCK_PORT: clk
+PNR_SDC_FILE: dir::constraints.sdc
+SIGNOFF_SDC_FILE: dir::constraints.sdc

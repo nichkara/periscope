@@ -1,6 +1,6 @@
-# Makefile for the different parts of the RISC-V COntroller
+# Makefile for the different parts of the RISC-V Controller
 # Project by
-# Yannick Reiß
+# Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 
 # Variable section
 PARTS		=	ram regs alu decoder pc cpu
@@ -17,6 +17,7 @@ ALUENTITY	=	alu_tb
 PCENTITY	=	pc_tb
 STOP		=	100us
 TBENCH 		=	alu_tb regs_tb
+NOTBSRC		=	src/riscv_types.vhd src/ram_block.vhd src/branch.vhd src/imem.vhd src/ram.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd
 
 # Build all
 all: $(PARTS)
@@ -52,7 +53,10 @@ decoder:	$(DECSRC)
 cpu:	$(CPUSRC)
 	$(CHDL) -a $(FLAGS) $(CPUSRC)
 	$(CHDL) -e $(FLAGS) cpu_tb
-	$(CHDL) -r $(FLAGS) cpu_tb --wave=cpu.ghw --stop-time=60000ns
+	$(CHDL) -r $(FLAGS) cpu_tb --wave=cpu.ghw --stop-time=600ns
+
+raw:	$(NOTBSRC)
+	$(CHDL) -a $(FLAGS) $(NOTBSRC)
 
 # project rules
 clean:
@@ -62,4 +66,4 @@ clean:
 	find . -name '*_tb' -exec rm -r {} \;
 	rm alu_tb regs_tb decoder_tb ram_tb pc_tb
 
-.PHONY: ram all regs cpu clean
+.PHONY: ram all regs cpu clean raw

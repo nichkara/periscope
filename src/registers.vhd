@@ -28,7 +28,7 @@ entity registers is
         wr_idx       : in  reg_idx; -- register to write to
         r1_idx       : in  reg_idx; -- first register to read from
         r2_idx       : in  reg_idx; -- second register to read from
-        write_enable : in  one_bit; -- enable writing to wr_idx
+        write_enable : in  std_logic; -- enable writing to wr_idx
         r1_out       : out word; -- data from first register
         r2_out       : out word -- data from second register
     );
@@ -36,28 +36,26 @@ end entity registers;
 
 -- Architecture structure of registers: read from two, write to one
 architecture structure of registers is
-    signal registerbench : regFile := initRegs;
+    signal registerbench : regFile;
 begin
 
-    -- react only on clock changes
-    process (clk, reset) is -- runs only, when clk changed
+    process (clk, reset) is
     begin
-        if falling_edge(reset) then
-            registerbench                                       <= initRegs;
-        else
-            if rising_edge(clk) then
-                -- check if write is enabled
-                if to_integer(unsigned(write_enable)) = 1 then
-                    -- write data_in to wr_idx
-                    registerbench(to_integer(unsigned(wr_idx))) <= data_in;
-                end if;
-                registerbench(0)                                <= std_logic_vector(to_unsigned(0, wordWidth));
+        if reset = '0' then
+            registerbench                                   <= initRegs;
+
+        elsif rising_edge(clk) then
+            if write_enable = '1' then
+                registerbench(to_integer(unsigned(wr_idx))) <= data_in;
             end if;
+
+            -- x0 immer 0 (RISC-V Regel)
+            registerbench(0)                                <= (others => '0');
         end if;
     end process;
 
     -- read from both reading registers
-    r1_out                                                      <= registerbench(to_integer(unsigned(r1_idx)));
-    r2_out                                                      <= registerbench(to_integer(unsigned(r2_idx)));
+    r1_out                                                  <= registerbench(to_integer(unsigned(r1_idx)));
+    r2_out                                                  <= registerbench(to_integer(unsigned(r2_idx)));
 
 end architecture structure;

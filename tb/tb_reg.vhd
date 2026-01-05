@@ -29,7 +29,7 @@ architecture testing of regs_tb is
     signal wr_idx_tb        : reg_idx;
     signal r1_idx_tb        : reg_idx;
     signal r2_idx_tb        : reg_idx;
-    signal write_enable_tb  : one_bit;
+    signal write_enable_tb  : std_logic;
 
     -- Outputs
     signal r1_out_tb        : word;
@@ -76,7 +76,7 @@ begin
         wait for 5 ns;
 
         -- Set up initial registers
-        write_enable_tb     <= "1";
+        write_enable_tb     <= '1';
         wr_idx_tb           <= std_logic_vector(to_unsigned(0, reg_adr_size));
         data_in_tb          <= std_logic_vector(to_unsigned(1, wordWidth));
         wait for 10 ns;
@@ -84,7 +84,7 @@ begin
         data_in_tb          <= std_logic_vector(to_unsigned(1, wordWidth));
 
         wait for 10 ns;
-        write_enable_tb     <= "0";
+        write_enable_tb     <= '0';
 
         -- Check zero register first
         r1_idx_tb           <= std_logic_vector(to_unsigned(0, reg_adr_size));
@@ -99,9 +99,9 @@ begin
             r2_idx_tb       <= std_logic_vector(to_unsigned(reg_z_addr - 1, reg_adr_size));
             wait for 10 ns;
             data_in_tb      <= std_logic_vector(unsigned(r1_out_tb) + unsigned(r2_out_tb));
-            write_enable_tb <= "1";
+            write_enable_tb <= '1';
             wait for 10 ns;
-            write_enable_tb <= "0";
+            write_enable_tb <= '0';
         end loop;
 
         -- Check register 31
