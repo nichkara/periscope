@@ -5,7 +5,7 @@ RISCV_PREFIX ?= riscv32-unknown-elf
 ARCH         = rv32i
 ABI          = ilp32
 
-CC      = $(RISCV_PREFIX)-gcc
+RVCC      = $(RISCV_PREFIX)-gcc
 AS      = $(RISCV_PREFIX)-as
 OBJCOPY = $(RISCV_PREFIX)-objcopy
 OBJDUMP = $(RISCV_PREFIX)-objdump
@@ -31,7 +31,7 @@ ROMVHDL = rom.vhd
 simulation: $(ROMVHDL)
 
 $(ELF): $(SRC)
-	$(CC) $(CFLAGS) -Ttext=0x00000000 $< -o $@
+	$(RVCC) $(CFLAGS) -Ttext=0x00000000 $< -o $@
 
 $(BIN): $(ELF)
 	$(OBJCOPY) -O binary --only-section=.text $< $@
