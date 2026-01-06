@@ -1,6 +1,7 @@
 # Makefile for the different parts of the RISC-V Controller
 # Project by
 # Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+include simulation.mk
 
 # Variable section
 PARTS		=	ram regs alu decoder pc cpu
@@ -26,7 +27,7 @@ all: $(PARTS)
 ram: $(RAMSRC)
 	$(CHDL) -a $(FLAGS) $(RAMSRC)
 	$(CHDL) -e $(FLAGS) ram_tb
-	$(CHDL) -r $(FLAGS) ram_tb
+	$(CHDL) -r $(FLAGS) ram_tb --wave=testbench.ghw
 
 # registerbank testbench
 regs: $(REGSSRC)
@@ -60,6 +61,7 @@ raw:	$(NOTBSRC)
 
 # project rules
 clean:
+	make cleanup
 	find . -name '*.o' -exec rm -r {} \;
 	find . -name '*.cf' -exec rm -r {} \;
 	find . -name '*.ghw' -exec rm -r {} \;

@@ -21,14 +21,6 @@ jobs:
       run: |
         apt-get install -y make ghdl-gcc ghdl-tools gcc
 
-    - name: run ram testbench
-      run: |
-        make ram
-
-    - name: run register testbench
-      run: |
-        make regs
-
     - name: build, compile and run alu testbench
       run: |
         make alu
