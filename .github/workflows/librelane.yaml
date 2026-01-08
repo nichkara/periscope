@@ -40,9 +40,11 @@ jobs:
     # ------------------------------------------------------------
     # LibreLane
     # ------------------------------------------------------------
-    - name: Install LibreLane
+    - name: Install LibreLane (tarball)
       run: |
-        git clone https://github.com/efabless/librelane.git
+        wget -qO librelane.tar.gz https://github.com/efabless/librelane/archive/refs/heads/main.tar.gz
+        tar xf librelane.tar.gz
+        mv librelane-main librelane
         cd librelane
         python3 -m venv venv
         . venv/bin/activate
