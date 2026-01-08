@@ -23,7 +23,7 @@ SRC     = main.c
 ELF     = main.elf
 BIN     = main.bin
 HEX     = main.hex
-ROMVHDL = rom.vhd
+ROMVHDL = src/rom.vhd
 
 # ========================
 # Rules
@@ -43,14 +43,14 @@ $(ROMVHDL): $(HEX)
 	@echo "library ieee;"                    >  $@
 	@echo "use ieee.std_logic_1164.all;"     >> $@
 	@echo "use ieee.numeric_std.all;"        >> $@
+	@echo "use work.riscv_types.all;"        >> $@
 	@echo ""                                 >> $@
-	@echo "package rom_pkg is"               >> $@
-	@echo "  type rom_t is array (natural range <>) of std_logic_vector(31 downto 0);" >> $@
-	@echo "  constant ROM : rom_t := ("       >> $@
+	@echo "package Bios is"               >> $@
+	@echo "  constant Rom : ram_t := ("       >> $@
 	@awk '{ printf("    %d => x\"%s\",\n", NR-1, $$1) }' $(HEX) >> $@
 	@echo "    others => x\"00000013\""       >> $@  # NOP
 	@echo "  );"                              >> $@
-	@echo "end package rom_pkg;"              >> $@
+	@echo "end package Bios;"              >> $@
 
 cleanup:
 	rm -f $(ELF) $(BIN) $(HEX) $(ROMVHDL)
@@ -58,4 +58,4 @@ cleanup:
 dump:
 	$(OBJDUMP) -d $(ELF)
 
-.PHONY: all cleanup dump
+.PHONY: simulation cleanup dump
