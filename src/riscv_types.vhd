@@ -147,7 +147,7 @@ package riscv_types is
     type regFile is array (reg_size - 1 downto 0) of word;
 
     -- ram constants and type
-    constant ram_block_size : natural                          := 65536;
+    constant ram_block_size : natural                          := 1024;
     constant ram_size       : natural                          := ram_block_size * 4;
     constant ram_addr_size  : natural                          := 32;
 
