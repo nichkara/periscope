@@ -20,7 +20,7 @@ architecture Behavioral of cpu_tb is
     constant clk_period        : time       := 10 ns;
 
     -- CPU and RAM constraints
-    signal cpu_reset           : std_logic  := '0';
+    signal cpu_reset           : std_logic  := '1';
     signal cpu_instruction     : word       := (others => '0');
     signal cpu_data            : word       := (others => '0');
     signal ram_enable          : std_logic  := '0';
@@ -34,7 +34,6 @@ begin
 
     ram_cut_zeros       <= "00000000000000000000" & ram_address(11 downto 0);
     instr_pointer_zeros <= "00000000000000000000" & instr_pointer(11 downto 0);
-
     -- Instantiate the Unit Under Test (UUT)
     uut: entity work.cpu(implementation)
     port map (
@@ -77,9 +76,9 @@ begin
         writeline(output, lineBuffer);
 
         wait for 100 ns;
-        cpu_reset       <= '1';
-        wait for 17 ns;
         cpu_reset       <= '0';
+        wait for 17 ns;
+        cpu_reset       <= '1';
 
         wait;
     end process stim_proc;
