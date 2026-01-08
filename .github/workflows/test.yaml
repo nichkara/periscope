@@ -1,0 +1,31 @@
+name: Run GHDL testbench
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-24.04]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Update system
+      run: |
+        apt-get update -qy
+
+    - name: Install dependencies
+      run: |
+        apt-get install -y make ghdl-gcc ghdl-tools gcc
+
+    - name: Memory verification
+      run: |
+        cp .gitea/rom.vhd src/rom.vhd
+        make memory_read_write
+
+    - name: ALU verification
+      run: |
+        make alu
