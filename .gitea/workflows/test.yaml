@@ -22,8 +22,8 @@ jobs:
         apt-get install -y make ghdl-gcc ghdl-tools gcc gcc-riscv64-linux-gnu tar xz-utils
         wget -O riscv32.tar.xz https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2026.01.01/riscv32-elf-ubuntu-24.04-gcc.tar.xz
         tar xf riscv32.tar.xz
-        cd riscv/bin
-        mv riscv32-unknown-elf-gcc /bin/
+        cd riscv/bin/
+        mv ./* /bin/
 
     - name: Memory verification
       run: |
