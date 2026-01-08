@@ -4,7 +4,7 @@ standard = "2008"
 [libraries]
 defaultlib.files = [
     'src/*.vhd',
-    'tb/tb_cpu.vhd'
+    'tb/*.vhd'
 ]
 
 [lint]
