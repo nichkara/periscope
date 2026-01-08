@@ -23,7 +23,8 @@ end entity Memory;
 
 architecture Simulation of Memory is
 
-    constant Block_Count             : Integer := 4194304;
+    constant Block_Count             : Integer := 32; -- Max: 4194304
+    constant Address_Size_Max        : Integer := 5;
     type Block_Mux_Cluster is array (0 to Block_Count - 1) of word;
 
     signal Block_Enable              : std_logic_vector(Block_Count - 1 downto 0);
@@ -61,10 +62,13 @@ begin
     end generate;
 
     -- MUX Selectors
-    Read_Instruction          <= Instruction_Mux(to_integer(unsigned(Instruction_Address(31 downto 10))));
-    Read_Data                 <= Data_Mux(to_integer(unsigned(Data_Address(31 downto 10))));
+    Read_Instruction          <=
+        Instruction_Mux(to_integer(unsigned(Instruction_Address(10 + (Address_Size_Max - 1) downto 10))));
+    Read_Data                 <= Data_Mux(to_integer(unsigned(Data_Address(10 + (Address_Size_Max - 1) downto 10))));
     Write_Enable_For_Cluster: for I in 1 to Block_Count - 1 generate
-        Block_Enable(I) <= Enable_Memory_Writeback when (I = to_integer(unsigned(Data_Address(31 downto 19)))) else '0';
+        Block_Enable(I)       <=
+            Enable_Memory_Writeback when (I = to_integer(unsigned(Data_Address(10 + (Address_Size_Max - 1) downto 10))))
+            else '0';
     end generate;
 
     -- Bus selector

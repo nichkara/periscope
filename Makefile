@@ -4,30 +4,30 @@
 include simulation.mk
 
 # Variable section
-PARTS		=	ram regs alu decoder pc cpu
+PARTS		=	memory_read_write regs alu decoder pc cpu
 CHDL		=	ghdl
 FLAGS		=	--std=08
 REGSSRC		=	src/riscv_types.vhd src/registers.vhd tb/tb_reg.vhd
 ALUSRC		=	src/riscv_types.vhd src/alu.vhd tb/tb_alu.vhd
-RAMSRC		=	src/riscv_types.vhd src/ram_block.vhd src/imem.vhd src/ram.vhd tb/tb_ram.vhd
+RAMSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/memory.vhd tb/tb_memory.vhd
 PCSRC		=	src/riscv_types.vhd src/pc.vhd tb/tb_pc.vhd
 DECSRC		=	src/riscv_types.vhd src/decoder.vhd tb/tb_decoder.vhd
-CPUSRC		=	src/riscv_types.vhd src/ram_block.vhd src/branch.vhd src/imem.vhd src/ram.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd tb/tb_cpu.vhd
+CPUSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/branch.vhd src/memory.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd tb/tb_cpu.vhd
 ENTITY		=	regs_tb
 ALUENTITY	=	alu_tb
 PCENTITY	=	pc_tb
 STOP		=	100us
 TBENCH 		=	alu_tb regs_tb
-NOTBSRC		=	src/riscv_types.vhd src/ram_block.vhd src/branch.vhd src/imem.vhd src/ram.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd
+NOTBSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/branch.vhd src/memory.vhd src/registers.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd
 
 # Build all
 all: $(PARTS)
 
 # ram testbench
-ram: $(RAMSRC)
+memory_read_write: $(RAMSRC)
 	$(CHDL) -a $(FLAGS) $(RAMSRC)
-	$(CHDL) -e $(FLAGS) ram_tb
-	$(CHDL) -r $(FLAGS) ram_tb --wave=testbench.ghw
+	$(CHDL) -e $(FLAGS) Memory_Testbench
+	$(CHDL) -r $(FLAGS) Memory_Testbench --wave=testbench.ghw
 
 # registerbank testbench
 regs: $(REGSSRC)
@@ -68,4 +68,4 @@ clean:
 	find . -name '*_tb' -exec rm -r {} \;
 	rm alu_tb regs_tb decoder_tb ram_tb pc_tb
 
-.PHONY: ram all regs cpu clean raw
+.PHONY: memory_read_write all regs cpu clean raw

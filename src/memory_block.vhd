@@ -44,15 +44,13 @@ begin
                 Memory                                                         <= Empty_Memory;
             else
                 if Enable_Memory_Writeback = '1' then
-                    Memory(to_integer(unsigned(Memory_Address_B(9 downto 0)))) <= Memory_Write;
+                    Memory(to_integer(unsigned(Memory_Address_B(9 downto 2)))) <= Memory_Write;
                 end if;
-
-                Memory_Read_A                                                  <= Memory(to_integer(unsigned(Memory_Address_A(9 downto 0))));
-                Memory_Read_B                                                  <= Memory(to_integer(unsigned(Memory_Address_B(9 downto 0))));
-
             end if;
         end if;
     end process;
+    Memory_Read_A                                                              <= Memory(to_integer(unsigned(Memory_Address_A(9 downto 2))));
+    Memory_Read_B                                                              <= Memory(to_integer(unsigned(Memory_Address_B(9 downto 2))));
 
 end architecture Random_Access;
 
@@ -72,11 +70,10 @@ begin
 
             if Reset_N = '0' then
                 Read_Only_Memory <= work.Bios.Rom;
-            else
-                Memory_Read_A    <= Read_Only_Memory(to_integer(unsigned(Memory_Address_A(9 downto 0))));
-                Memory_Read_B    <= Read_Only_Memory(to_integer(unsigned(Memory_Address_B(9 downto 0))));
             end if;
         end if;
     end process;
+    Memory_Read_A                <= Read_Only_Memory(to_integer(unsigned(Memory_Address_A(9 downto 2))));
+    Memory_Read_B                <= Read_Only_Memory(to_integer(unsigned(Memory_Address_B(9 downto 2))));
 
 end architecture Read_Only;

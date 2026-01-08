@@ -21,6 +21,11 @@ jobs:
       run: |
         apt-get install -y make ghdl-gcc ghdl-tools gcc
 
-    - name: build, compile and run alu testbench
+    - name: ALU verification
       run: |
         make alu
+
+    - name: Memory verification
+      run: |
+        make simulation
+        make memory_read_write
