@@ -1,0 +1,82 @@
+name: LibreLane Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  librelane:
+    runs-on: ubuntu-24.04
+
+    env:
+      PDK: ihp-sg13g2
+      PDK_ROOT: ${{ github.workspace }}/PDKs
+      LIBRELANE_ROOT: ${{ github.workspace }}/librelane
+
+    steps:
+    # ------------------------------------------------------------
+    # Checkout
+    # ------------------------------------------------------------
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # ------------------------------------------------------------
+    # System dependencies
+    # ------------------------------------------------------------
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3 \
+          python3-venv \
+          python3-pip \
+          git \
+          make \
+          wget \
+          tar \
+          xz-utils \
+          ca-certificates
+
+    # ------------------------------------------------------------
+    # LibreLane
+    # ------------------------------------------------------------
+    - name: Install LibreLane
+      run: |
+        git clone https://github.com/efabless/librelane.git
+        cd librelane
+        python3 -m venv venv
+        . venv/bin/activate
+        pip install --upgrade pip
+        pip install -e .
+
+    # ------------------------------------------------------------
+    # PDK (IHP SG13G2)
+    # ------------------------------------------------------------
+    - name: Install IHP SG13G2 PDK
+      run: |
+        mkdir -p "$PDK_ROOT"
+        cd "$PDK_ROOT"
+        git clone https://github.com/IHP-GmbH/IHP-Open-PDK.git ihp-sg13g2
+
+    # ------------------------------------------------------------
+    # Run LibreLane flow
+    # ------------------------------------------------------------
+    - name: Run LibreLane
+      run: |
+        cd librelane
+        . venv/bin/activate
+        librelane \
+          --pdk $PDK \
+          --pdk-root $PDK_ROOT \
+          ../config.yaml
+
+    # ------------------------------------------------------------
+    # Upload results
+    # ------------------------------------------------------------
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: librelane-results
+        path: |
+          runs/
+          designs/
