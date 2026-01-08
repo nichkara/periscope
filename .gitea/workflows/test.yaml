@@ -19,20 +19,11 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apt-get install -y make ghdl-gcc ghdl-tools gcc tar xz-utils
-        wget -q https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2026.01.01/riscv32-elf-ubuntu-24.04-gcc.tar.xz
-        tar xf riscv32-elf-ubuntu-24.04-gcc.tar.xz
-        mv riscv/bin/* /bin
-
-    - name: Verify RISC-V toolchain
-      run: |
-        ls /bin
-        which riscv32-unknown-elf-gcc
-        riscv32-unknown-elf-gcc --version
+        apt-get install -y make ghdl-gcc ghdl-tools gcc
 
     - name: Memory verification
       run: |
-        make simulation
+        cp .gitea/rom.vhd src/rom.vhd
         make memory_read_write
 
     - name: ALU verification
