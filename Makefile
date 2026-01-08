@@ -24,7 +24,7 @@ NOTBSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/branch.vhd s
 all: $(PARTS)
 
 # ram testbench
-memory_read_write: $(RAMSRC)
+memory_read_write:
 	$(CHDL) -a $(FLAGS) $(RAMSRC)
 	$(CHDL) -e $(FLAGS) Memory_Testbench
 	$(CHDL) -r $(FLAGS) Memory_Testbench --wave=testbench.ghw
