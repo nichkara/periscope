@@ -19,7 +19,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apt-get install -y make ghdl-gcc ghdl-tools gcc
+        apt-get install -y make ghdl-gcc ghdl-tools gcc riscv64-unknown-elf-gcc
 
     - name: Memory verification
       run: |
