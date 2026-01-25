@@ -2,6 +2,7 @@
 # Project by
 # Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 include simulation.mk
+include fpga.mk
 
 # Variable section
 PARTS		=	memory_read_write regs alu decoder pc cpu shift_register
@@ -13,7 +14,7 @@ RAMSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/memory.vhd tb
 PCSRC		=	src/riscv_types.vhd src/pc.vhd tb/tb_pc.vhd
 DECSRC		=	src/riscv_types.vhd src/decoder.vhd tb/tb_decoder.vhd
 SREG 		= 	src/riscv_types.vhd src/shift_register.vhd tb/tb_shift_register.vhd
-CPUSRC		=	src/riscv_types.vhd src/rom.vhd src/memory_block.vhd src/branch.vhd src/memory.vhd src/register_cluster.vhd src/alu.vhd src/pc.vhd src/decoder.vhd src/imm.vhd src/cpu.vhd tb/tb_cpu.vhd
+CPUSRC		=	src/riscv_types.vhd src/alu.vhd src/decoder.vhd src/imm.vhd src/pc.vhd src/register_cluster.vhd src/pipeline.vhd src/cpu.vhd tb/tb_cpu.vhd
 ENTITY		=	Register_Cluster_Testbench
 ALUENTITY	=	alu_tb
 PCENTITY	=	pc_tb
@@ -61,7 +62,7 @@ shift_register:	$(SREG)
 cpu:	$(CPUSRC)
 	$(CHDL) -a $(FLAGS) $(CPUSRC)
 	$(CHDL) -e $(FLAGS) cpu_tb
-	$(CHDL) -r $(FLAGS) cpu_tb --wave=cpu.ghw --stop-time=600ns
+	$(CHDL) -r $(FLAGS) cpu_tb --wave=testbench.ghw --stop-time=600000ns
 
 raw:	$(NOTBSRC)
 	$(CHDL) -a $(FLAGS) $(NOTBSRC)
