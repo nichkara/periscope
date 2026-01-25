@@ -167,6 +167,9 @@ package riscv_types is
     constant mul_pc_pc4     : one_bit                          := "0";
     constant mul_pc_alu     : one_bit                          := "1";
 
+    -- Pipeline constructs
+    type Destination is (Program_Counter, Register_Writeback, Memory_Writeback);
+
 end package riscv_types;
 
 package body riscv_types is

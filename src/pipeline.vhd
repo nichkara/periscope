@@ -26,10 +26,16 @@ end entity Pipeline;
 
 -- Architecture Simple of Pipeline: No forwarding, branch prediction, etc.
 architecture Simple of Pipeline is
-    signal Target_Registers         : word;
-    signal Register_X_Serial        : word;
-    signal Instructions_In_Pipeline : std_logic_vector(2 downto 0);
-    signal Clear_Pipeline           : std_logic;
+    signal Target_Registers                 : word;
+    signal Register_X_Serial                : word;
+    signal Drop_Register                    : word;
+    signal Instructions_In_Pipeline         : std_logic_vector(2 downto 0);
+    signal Clear_Pipeline                   : std_logic;
+
+    -- Skip execution state buffer
+    signal Operand_Fetch_Opcode             : opcode;
+    signal Operand_Fetch_Result_Destination : Destination;
+    signal Execute_Result_Destination       : Destination;
 begin
 
     -- Expand Register X
@@ -105,9 +111,6 @@ begin
         end if;
 
     end process Pipeline_Clear_Check;
-
-
-    -- Instruction fetch
 
     -- Decode
 

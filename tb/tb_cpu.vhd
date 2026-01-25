@@ -1,85 +1,88 @@
+-- tb_cpu.vhd
+-- Created on: Di 6. Dez 10:50:02 CET 2022
+-- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Content: Testbench with simulated soc and self verifying program
+
+-- ----------------------------------
+-- SOC Configuration:
+--   - 1 CPU
+--   - 1 Memory instance (32 Blocks)
+--   - 1 Sound Card Block
+--   - 2 Graphics Card Blocks
+--   - 1 eFPGA-Dummy
+-- ----------------------------------
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.uniform;
 
 use work.riscv_types.all;
 
 library std;
 use std.textio.all;
 
+-- Entity cpu_tb: dummy entity for cpu
 entity cpu_tb is
 end entity cpu_tb;
 
-architecture Behavioral of cpu_tb is
+-- Architecture testingcpu of cpu_tb: testing instruction decode
+architecture Testbench of cpu_tb is
+    -- clk
+    constant Clock_Period        : time := 10 ns;
+    signal Clock_Emulation       : std_logic;
+    signal Reset_Emulation       : std_logic;
 
-    -- Clock and Reset
-    signal clk                 : std_logic;
+    -- inputs
+    signal Interrupt             : std_logic;
+    signal Instruction           : word;
+    signal Memory_A              : word;
+    signal Memory_b              : word;
 
-    -- Outputs
-    -- Clock period definitions
-    constant clk_period        : time       := 10 ns;
-
-    -- CPU and RAM constraints
-    signal cpu_reset           : std_logic  := '1';
-    signal cpu_instruction     : word       := (others => '0');
-    signal cpu_data            : word       := (others => '0');
-    signal ram_enable          : std_logic  := '0';
-    signal instr_pointer       : ram_addr_t := (others => '0');
-    signal ram_address         : ram_addr_t := (others => '0');
-    signal ram_data            : word       := (others => '0');
-    signal ram_cut_zeros       : ram_addr_t := (others => '0');
-    signal instr_pointer_zeros : ram_addr_t := (others => '0');
+    -- outputs
+    signal Instruction_Address   : word;
+    signal Memory_Address_Read_A : word;
+    signal Memory_Address_Read_B : word;
+    signal Memory_Address_Write  : word;
+    signal Memory_Write          : word;
 
 begin
-
-    ram_cut_zeros       <= "00000000000000000000" & ram_address(11 downto 0);
-    instr_pointer_zeros <= "00000000000000000000" & instr_pointer(11 downto 0);
-    -- Instantiate the Unit Under Test (UUT)
-    uut: entity work.cpu(implementation)
+    Uut: entity work.Cpu(Implementation)
     port map (
-        clk                 => clk,
-        rst_n               => cpu_reset,
-        instruction_read    => cpu_instruction,
-        ram_read_data       => cpu_data,
-        ram_enable_writing  => ram_enable,
-        instruction_pointer => instr_pointer,
-        data_address        => ram_address,
-        ram_write_data      => ram_data
+        Clock                 => Clock_Emulation,
+        Reset_N               => Reset_Emulation,
+        Interrupt             => Interrupt,
+        Instruction           => Instruction,
+        Memory_A              => Memory_A,
+        Memory_B              => Memory_B,
+        Instruction_Address   => Instruction_Address,
+        Memory_Address_Read_A => Memory_Address_Read_A,
+        Memory_Address_Read_B => Memory_Address_Read_B,
+        Memory_Address_Write  => Memory_Address_Write,
+        Memory_Write          => Memory_Write
     );
 
-    rut: entity work.ram(behavioral)
-    port map (
-        clk                 => clk,
-        reset_n             => cpu_reset,
-        instructionAddr     => instr_pointer_zeros,
-        dataAddr            => ram_cut_zeros,
-        writeEnable         => ram_enable,
-        dataIn              => ram_data,
-        instruction         => cpu_instruction,
-        dataOut             => cpu_data
-    );
-
-    -- Clock process definitions
-    clk_process: process
+    Clock_Signal_Emulation: process
     begin
-        clk             <= '0';
-        wait for clk_period / 2;
-        clk             <= '1';
-        wait for clk_period / 2;
-    end process clk_process;
+        Clock_Emulation <= '0';
+        wait for Clock_Period / 2;
+        Clock_Emulation <= '1';
+        wait for Clock_Period / 2;
+    end process Clock_Signal_Emulation;
 
-    -- Process stim_proc  stimulate uut
-    stim_proc: process -- runs only, when  changed
-        variable lineBuffer    : line;
+    Simulation: process
+        variable Line_Buffer     : line;
     begin
-        write(lineBuffer, string'("Start the simulator"));
-        writeline(output, lineBuffer);
+        write(Line_Buffer, string'("Start the simulator"));
+        writeline(output, Line_Buffer);
 
-        wait for 100 ns;
-        cpu_reset       <= '0';
-        wait for 17 ns;
-        cpu_reset       <= '1';
+        Reset_Emulation <= '1';
+        wait until rising_edge(Clock_Emulation);
+        Reset_Emulation <= '0';
+
+        wait for 5 ns;
+        Reset_Emulation <= '1';
 
         wait;
-    end process stim_proc;
-end architecture Behavioral;
+    end process Simulation;
+end architecture Testbench;

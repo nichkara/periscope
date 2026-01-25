@@ -1,4 +1,4 @@
--- alu.vhd
+-- Alu.vhd
 -- Created on: Mo 21. Nov 11:23:36 CET 2022
 -- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: ALU
@@ -8,57 +8,57 @@ use ieee.numeric_std.all;
 
 use work.riscv_types.all;
 
-entity alu is
+entity Alu is
     port (
-        alu_opc : in  aluOP; -- alu opcode.
-        input1  : in  word; -- input1 of alu (reg1 / pc address) rs1
-        input2  : in  word; -- input2 of alu (reg2 / immediate)  rs2
-        result  : out word -- alu output.
+        Operation_Code : in  AluOP;
+        Operand_1      : in  word;
+        Operand_2      : in  word;
+        Result         : out word
     );
-end entity alu;
+end entity Alu;
 
--- Architecture implementation of alu: implements operatings mode
-architecture implementation of alu is
+-- Architecture implementation of Alu: implements operatings mode
+architecture Implementation of Alu is
 
 begin
     -- Process log  that fetches the opcode and executes it
-    log: process (alu_opc, input1, input2) is                                                                  -- runs only, when all changed
+    log: process (Operation_Code, Operand_1, Operand_2) is                                                           -- runs only, when all changed
     begin
-        case alu_opc is
+        case Operation_Code is
             when uNOP =>
-                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                     -- no operations
+                Result     <= std_logic_vector(to_unsigned(0, wordWidth));                                           -- no operations
             when uADD =>
-                result     <= std_logic_vector(unsigned(input1) + unsigned(input2));                           -- addition
+                Result     <= std_logic_vector(unsigned(Operand_1) + unsigned(Operand_2));                           -- addition
             when uSUB =>
-                result     <= std_logic_vector(signed(input1) - signed(input2));                               -- subtraction
+                Result     <= std_logic_vector(signed(Operand_1) - signed(Operand_2));                               -- subtraction
             when uSLL =>
-                result     <= std_logic_vector(unsigned(input1) sll to_integer(unsigned(input2(4 downto 0)))); -- shift left logical
+                Result     <= std_logic_vector(unsigned(Operand_1) sll to_integer(unsigned(Operand_2(4 downto 0)))); -- shift left logical
             when uSLT =>
-                if (signed(input1) < signed(input2)) then
-                    result <= std_logic_vector(to_unsigned(1, wordWidth));
+                if (signed(Operand_1) < signed(Operand_2)) then
+                    Result <= std_logic_vector(to_unsigned(1, wordWidth));
                 else
-                    result <= std_logic_vector(to_unsigned(0, wordWidth));
-                end if;                                                                                        -- Set lower than
+                    Result <= std_logic_vector(to_unsigned(0, wordWidth));
+                end if;                                                                                              -- Set lower than
             when uSLTU =>
-                if (unsigned(input1) < unsigned(input2)) then
-                    result <= std_logic_vector(to_unsigned(1, wordWidth));
+                if (unsigned(Operand_1) < unsigned(Operand_2)) then
+                    Result <= std_logic_vector(to_unsigned(1, wordWidth));
                 else
-                    result <= std_logic_vector(to_unsigned(0, wordWidth));
-                end if;                                                                                        -- Set lower than unsigned
+                    Result <= std_logic_vector(to_unsigned(0, wordWidth));
+                end if;                                                                                              -- Set lower than unsigned
             when uXOR =>
-                result     <= input1 xor input2;                                                               -- exclusive or
+                Result     <= Operand_1 xor Operand_2;                                                               -- exclusive or
             when uSRL =>
-                result     <= std_logic_vector(unsigned(input1) srl to_integer(unsigned(input2(4 downto 0)))); -- shift right logical
+                Result     <= std_logic_vector(unsigned(Operand_1) srl to_integer(unsigned(Operand_2(4 downto 0)))); -- shift right logical
             when uSRA =>
-                result     <=
-                    (input1 and b"10000000000000000000000000000000") or std_logic_vector(unsigned(input1) srl
-                        to_integer(unsigned(input2(4 downto 0))));                                             -- shift right arithmetic
+                Result     <=
+                    (Operand_1 and b"10000000000000000000000000000000") or std_logic_vector(unsigned(Operand_1) srl
+                        to_integer(unsigned(Operand_2(4 downto 0))));                                                -- shift right arithmetic
             when uOR =>
-                result     <= input1 or input2;                                                                -- or
+                Result     <= Operand_1 or Operand_2;                                                                -- or
             when uAND =>
-                result     <= input1 and input2;                                                               -- and
+                Result     <= Operand_1 and Operand_2;                                                               -- and
             when others =>
-                result     <= std_logic_vector(to_unsigned(0, wordWidth));                                     -- other operations return zero
+                Result     <= std_logic_vector(to_unsigned(0, wordWidth));                                           -- other operations return zero
         end case;
     end process log;
-end architecture implementation;
+end architecture Implementation;

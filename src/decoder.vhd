@@ -1,5 +1,4 @@
--- vsg_off
--- decoder_reloaded.vhd
+-- decoder.vhd
 -- Created on: Do 8. Dez 18:45:24 CET 2022
 -- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: Decoder Version 2 (ständige vollbelegung)
@@ -10,159 +9,158 @@ use ieee.numeric_std.all;
 
 use work.riscv_types.all;
 
--- Entity decode: Decoder currently supporting read operations
-entity decoder is
+entity Decoder is
     port (
-        instrDecode      : in  instruction; -- Instruction from instruction memory
-        op_code          : out uOP; -- alu opcode
-        immediate_format : out imm_formats;
-        regOp1           : out reg_idx; -- Rj: first register to read
-        regOp2           : out reg_idx; -- Rk: second register to read
-        regWrite         : out reg_idx -- Ri: the register to write to
+        Raw_Instruction     : in  instruction;
+        Operation           : out uOP;
+        Immediate_Structure : out imm_formats;
+        Operand_Register_1  : out reg_idx;
+        Operand_Register_2  : out reg_idx;
+        Write_Register      : out reg_idx
     );
-end entity decoder;
+end entity Decoder;
 
 -- Architecture schematic of decode: Split up instruction into registers
-architecture decode of decoder is
+architecture Decode of Decoder is
 
 begin
 
     -- Process decode  splits up instruction for alu
-    process (instrDecode(11 downto 7), instrDecode(14 downto 12), instrDecode(19 downto 15), instrDecode(24 downto 20),
-    instrDecode(31 downto 25), instrDecode(6 downto 0)) is -- runs only, when instrDecode changed
+    process (Raw_Instruction(11 downto 7), Raw_Instruction(14 downto 12), Raw_Instruction(19 downto 15),
+    Raw_Instruction(24 downto 20), Raw_Instruction(31 downto 25), Raw_Instruction(6 downto 0)) is -- runs only, when Raw_Instruction changed
     begin
 
-        -- op_code (funct7 + funct3 + operand)
-        case instrDecode(6 downto 0) is
+        -- Operation (funct7 + funct3 + operand)
+        case Raw_Instruction(6 downto 0) is
                 -- R-Type
             when "0110011" =>
-                case instrDecode(14 downto 12) is
+                case Raw_Instruction(14 downto 12) is
                     when "000" =>
-                        if instrDecode(31 downto 25) = "0000000" then
-                            op_code <= uADD;
+                        if Raw_Instruction(31 downto 25) = "0000000" then
+                            Operation <= uADD;
                         else
-                            op_code <= uSUB;
-                        end if;                            -- ADD / SUB
+                            Operation <= uSUB;
+                        end if;                                                                   -- ADD / SUB
                     when "001" =>
-                        op_code     <= uSLL;
+                        Operation     <= uSLL;
                     when "010" =>
-                        op_code     <= uSLT;
+                        Operation     <= uSLT;
                     when "011" =>
-                        op_code     <= uSLTU;
+                        Operation     <= uSLTU;
                     when "100" =>
-                        op_code     <= uXOR;
+                        Operation     <= uXOR;
                     when "101" =>
-                        if instrDecode(31 downto 25) = "0000000" then
-                            op_code <= uSRL;
+                        if Raw_Instruction(31 downto 25) = "0000000" then
+                            Operation <= uSRL;
                         else
-                            op_code <= uSRA;
+                            Operation <= uSRA;
                         end if;
                     when "110" =>
-                        op_code     <= uOR;
+                        Operation     <= uOR;
                     when "111" =>
-                        op_code     <= uAND;
+                        Operation     <= uAND;
                     when others =>
-                        op_code     <= uNOP;
+                        Operation     <= uNOP;
                 end case;
 
                 -- I-Type
             when "1100111" =>
-                op_code             <= uJALR;
+                Operation             <= uJALR;
             when "0000011" =>
-                case instrDecode(14 downto 12) is
+                case Raw_Instruction(14 downto 12) is
                     when "000" =>
-                        op_code     <= uLB;
+                        Operation     <= uLB;
                     when "001" =>
-                        op_code     <= uLH;
+                        Operation     <= uLH;
                     when "010" =>
-                        op_code     <= uLW;
+                        Operation     <= uLW;
                     when "100" =>
-                        op_code     <= uLBU;
+                        Operation     <= uLBU;
                     when "101" =>
-                        op_code     <= uLHU;
+                        Operation     <= uLHU;
                     when others =>
-                        op_code     <= uNOP;
+                        Operation     <= uNOP;
                 end case;
             when "0010011" =>
-                case instrDecode(14 downto 12) is
+                case Raw_Instruction(14 downto 12) is
                     when "000" =>
-                        op_code     <= uADDI;
+                        Operation     <= uADDI;
                     when "001" =>
-                        op_code     <= uSLTI;
+                        Operation     <= uSLTI;
                     when "010" =>
-                        op_code     <= uSLTIU;
+                        Operation     <= uSLTIU;
                     when "011" =>
-                        op_code     <= uXORI;
+                        Operation     <= uXORI;
                     when "100" =>
-                        op_code     <= uORI;
+                        Operation     <= uORI;
                     when "101" =>
-                        op_code     <= uANDI;
+                        Operation     <= uANDI;
                     when others =>
-                        op_code     <= uNOP;
+                        Operation     <= uNOP;
                 end case;
 
                 -- S-Type
             when "0100011" =>
-                case instrDecode(14 downto 12) is
+                case Raw_Instruction(14 downto 12) is
                     when "000" =>
-                        op_code     <= uSB;
+                        Operation     <= uSB;
                     when "001" =>
-                        op_code     <= uSH;
+                        Operation     <= uSH;
                     when "010" =>
-                        op_code     <= uSW;
+                        Operation     <= uSW;
                     when others =>
-                        op_code     <= uNOP;
+                        Operation     <= uNOP;
                 end case;
 
                 -- B-Type
             when "1100011" =>
-                case instrDecode(14 downto 12) is
+                case Raw_Instruction(14 downto 12) is
                     when "000" =>
-                        op_code     <= uBEQ;
+                        Operation     <= uBEQ;
                     when "001" =>
-                        op_code     <= uBNE;
+                        Operation     <= uBNE;
                     when "100" =>
-                        op_code     <= uBLT;
+                        Operation     <= uBLT;
                     when "101" =>
-                        op_code     <= uBGE;
+                        Operation     <= uBGE;
                     when "110" =>
-                        op_code     <= uBLTU;
+                        Operation     <= uBLTU;
                     when "111" =>
-                        op_code     <= uBGEU;
+                        Operation     <= uBGEU;
                     when others =>
-                        op_code     <= uNOP;
+                        Operation     <= uNOP;
                 end case;
 
                 -- U-Type
             when "0110111" =>
-                op_code             <= uLUI;
+                Operation             <= uLUI;
             when "0010111" =>
-                op_code             <= uAUIPC;
+                Operation             <= uAUIPC;
 
                 -- J-Type
             when "1101111" =>
-                op_code             <= uJAL;
+                Operation             <= uJAL;
 
                 -- Add more Operandtypes here
             when others =>
-                op_code             <= uNOP;
+                Operation             <= uNOP;
         end case;
 
-        -- regOp1 (19-15)
-        regOp1                      <= instrDecode(19 downto 15);
+        -- Operand_Register_1 (19-15)
+        Operand_Register_1            <= Raw_Instruction(19 downto 15);
 
-        -- regOp2 (24-20)
-        regOp2                      <= instrDecode(24 downto 20);
+        -- Operand_Register_2 (24-20)
+        Operand_Register_2            <= Raw_Instruction(24 downto 20);
 
-        -- regWrite (11-7)
-        regWrite                    <= instrDecode(11 downto 7);
+        -- Write_Register (11-7)
+        Write_Register                <= Raw_Instruction(11 downto 7);
     end process;
 
-    with instrDecode(6 downto 0) select
-    immediate_format <= I when "0000011" | "0010011" | "1100111" | "1110011" | "0000111" | "0001011" | "1011011",
+    with Raw_Instruction(6 downto 0) select
+    Immediate_Structure <= I when "0000011" | "0010011" | "1100111" | "1110011" | "0000111" | "0001011" | "1011011",
                         S when "0100011" | "0100111" | "0101011" | "1111011",
                         B when "1100011",
                         U when "0110111" | "0010111",
                         J when "1101111",
                         None when others;
-end architecture decode;
+end architecture Decode;

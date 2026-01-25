@@ -14,12 +14,12 @@ library std;
 use std.textio.all;
 use std.env.finish;
 
--- Entity regs_tb: Entity providing testinputs, receiving testoutputs for registerbench
-entity regs_tb is
-end entity regs_tb;
+-- Entity Register_Cluster_Testbench: Entity providing testinputs, receiving testoutputs for registerbench
+entity Register_Cluster_Testbench is
+end entity Register_Cluster_Testbench;
 
--- Architecture testing of regs_tb: testing read / write operations
-architecture testing of regs_tb is
+-- Architecture testing of Register_Cluster_Testbench: testing read / write operations
+architecture Testing of Register_Cluster_Testbench is
     -- clock definition
     signal clk              : std_logic;
     constant clk_period     : time := 10 ns;
@@ -35,22 +35,22 @@ architecture testing of regs_tb is
     signal r1_out_tb        : word;
     signal r2_out_tb        : word;
 
-    signal reset            : std_logic;
+    signal Reset_N          : std_logic;
 
 begin
 
     -- Init of Unit Under Test
-    uut: entity work.registers(Structure)
+    uut: entity work.Register_Cluster(Structure)
     port map (
-        clk          => clk,
-        reset        => reset,
-        data_in      => data_in_tb,
-        wr_idx       => wr_idx_tb,
-        r1_idx       => r1_idx_tb,
-        r2_idx       => r2_idx_tb,
-        write_enable => write_enable_tb,
-        r1_out       => r1_out_tb,
-        r2_out       => r2_out_tb
+        Clock              => clk,
+        Reset_N            => Reset_N,
+        Write_Data         => data_in_tb,
+        Register_ID_Write  => wr_idx_tb,
+        Register_ID_Read_1 => r1_idx_tb,
+        Register_ID_Read_2 => r2_idx_tb,
+        Enable_Writeback   => write_enable_tb,
+        Read_Data_1        => r1_out_tb,
+        Read_Data_2        => r2_out_tb
     );
 
     -- Process clk_process  operating the clock
@@ -72,8 +72,13 @@ begin
 
         -- wait for the rising edge
         wait until rising_edge(clk);
+        Reset_N             <= '1';
 
         wait for 5 ns;
+        Reset_N             <= '0';
+
+        wait until rising_edge(clk);
+        Reset_N             <= '1';
 
         -- Set up initial registers
         write_enable_tb     <= '1';
@@ -117,4 +122,4 @@ begin
 
     end process stim_proc;
 
-end architecture testing;
+end architecture Testing;

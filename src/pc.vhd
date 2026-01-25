@@ -1,4 +1,4 @@
--- pc.vhd
+-- Program_Counter.vhd
 -- Created on: Mo 05. Dec 14:21:39 CET 2022
 -- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: program counter
@@ -9,39 +9,39 @@ use ieee.numeric_std.all;
 use work.riscv_types.all;
 
 -- Entity PC: entity defining the pins and ports of the programmcounter
-entity pc is
+entity Program_Counter is
     port (
-        clk         : in  std_logic;
-        reset       : in  std_logic;
-        en_pc       : in  std_logic;
-        doJump      : in  std_logic;
-        addr_calc   : in  ram_addr_t;
-        jump_offset : in  ram_addr_t;
-        addr        : out ram_addr_t
+        Clock            : in  std_logic;
+        Reset_N          : in  std_logic;
+        Count_Enable     : in  std_logic;
+        Jump_Enable      : in  std_logic;
+        External_Address : in  ram_addr_t;
+        Jump_Offset      : in  ram_addr_t;
+        Updated_Address  : out ram_addr_t
     );
 
-end entity pc;
+end entity Program_Counter;
 
 
-architecture pro_count of pc is
-    signal status : std_logic_vector(2 downto 0);
+architecture Implementation of Program_Counter is
+    signal Status : std_logic_vector(2 downto 0);
 begin
-    process (clk, reset) is
+    process (Clock, Reset_N) is
     begin
-        if rising_edge(clk) then
-            case status is
+        if rising_edge(Clock) then
+            case Status is
                 when "110" | "111" =>
-                    addr <= (others => '0');
+                    Updated_Address <= (others => '0');
                 when "011" =>
-                    addr <= std_logic_vector(signed(addr_calc) + signed(jump_offset));
+                    Updated_Address <= std_logic_vector(signed(External_Address) + signed(Jump_Offset));
                 when "010" =>
-                    addr <= std_logic_vector(unsigned(addr_calc) + 4);
+                    Updated_Address <= std_logic_vector(unsigned(External_Address) + 4);
                 when others =>
-                    addr <= addr_calc;
+                    Updated_Address <= External_Address;
             end case;
         end if;
     end process;
 
-    status               <= (reset & en_pc & doJump);
+    Status                          <= (Reset_N & Count_Enable & Jump_Enable);
 
-end architecture pro_count;
+end architecture Implementation;

@@ -4,39 +4,40 @@ use ieee.numeric_std.all;
 
 use work.riscv_types.all;
 
-entity imm is
+entity Immediate is
     port (
-        instr       : in  instruction;
-        format_type : in  imm_formats;
-        immediate   : out word
+        Raw_Instruction   : in  instruction;
+        Format_Structure  : in  imm_formats;
+        Decoded_Immediate : out word
     );
-end entity imm;
+end entity Immediate;
 
--- Architecture slicing of imm: slices immediate out of instruction
-architecture slicing of imm is
+
+architecture slicing of Immediate is
 
 begin
-    -- Process immediate  slice
-    process (format_type, instr) is
+
+    process (Format_Structure, Raw_Instruction) is
     begin
-        case format_type is
+        case Format_Structure is
             when I =>
-                immediate <= std_logic_vector(to_unsigned(0, wordWidth - 12)) & instr(31 downto 20);
+                Decoded_Immediate <= std_logic_vector(to_unsigned(0, wordWidth - 12)) & Raw_Instruction(31 downto 20);
             when S =>
-                immediate <=
-                    std_logic_vector(to_unsigned(0, wordWidth - 12)) & instr(31 downto 25) & instr(11 downto 7);
+                Decoded_Immediate <=
+                    std_logic_vector(to_unsigned(0, wordWidth - 12)) & Raw_Instruction(31 downto 25) &
+                        Raw_Instruction(11 downto 7);
             when B =>
-                immediate <=
-                    std_logic_vector(to_unsigned(0, 19)) & instr(31) & instr(7) & instr(30 downto 25) &
-                        instr(11 downto 8) & "0";
+                Decoded_Immediate <=
+                    std_logic_vector(to_unsigned(0, 19)) & Raw_Instruction(31) & Raw_Instruction(7) &
+                        Raw_Instruction(30 downto 25) & Raw_Instruction(11 downto 8) & "0";
             when U =>
-                immediate <= instr(31 downto 12) & std_logic_vector(to_unsigned(0, 12));
+                Decoded_Immediate <= Raw_Instruction(31 downto 12) & std_logic_vector(to_unsigned(0, 12));
             when J =>
-                immediate <=
-                    std_logic_vector(to_unsigned(0, wordWidth - 21)) & instr(31) & instr(19 downto 12) & instr(20) &
-                        instr(30 downto 21) & "0";
+                Decoded_Immediate <=
+                    std_logic_vector(to_unsigned(0, wordWidth - 21)) & Raw_Instruction(31) &
+                        Raw_Instruction(19 downto 12) & Raw_Instruction(20) & Raw_Instruction(30 downto 21) & "0";
             when others =>
-                immediate <= x"00000000";
+                Decoded_Immediate <= x"00000000";
         end case;
     end process;
 
