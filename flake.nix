@@ -30,20 +30,17 @@
         # FPGA (Gowin / TangNano9K)
         pkgs.yosys
         pkgs.nextpnr
-        pkgs.openFPGALoader
-        pkgs.gowin-pack
 
         # RISC-V toolchain
         riscv.buildPackages.gcc
         riscv.buildPackages.binutils
-        riscv.buildPackages.newlib
       ];
 
       shellHook = ''
-        export RISCV_PREFIX=riscv32-unknown-elf
+        export RISCV_PREFIX=riscv32-none-elf
         echo "RV32I DevShell ready"
         echo "Toolchain:"
-        riscv32-unknown-elf-gcc --version | head -n1
+        riscv32-none-elf-gcc --version | head -n1
       '';
     };
 

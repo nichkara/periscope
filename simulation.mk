@@ -1,7 +1,7 @@
 # ========================
 # Configuration
 # ========================
-RISCV_PREFIX ?= riscv32-unknown-elf
+RISCV_PREFIX ?= riscv32-none-elf
 ARCH         = rv32i
 ABI          = ilp32
 
