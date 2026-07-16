@@ -1,6 +1,6 @@
 -- pipeline.vhd
 -- Created on: Mon 05 Jan 2026 18:07:19 CET
--- Author(s): Nina Chloé Reiß
+-- Author(s): Nina Chlóe Reiß
 -- Content: Pipeline entity controlling and storing cpu state.
 library ieee;
 use ieee.std_logic_1164.all;

@@ -1,6 +1,6 @@
 -- tb_cpu.vhd
 -- Created on: Di 6. Dez 10:50:02 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: Testbench with simulated soc and self verifying program
 
 -- ----------------------------------

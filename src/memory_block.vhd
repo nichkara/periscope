@@ -1,6 +1,6 @@
 -- Memory_Block.vhd
 -- Created on: Do 3. Nov 20:06:13 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content:  Entity Memory_Block: These are aligned to match the 1024x32 Bit SRAM cells from IHP-Open-PDK
 
 

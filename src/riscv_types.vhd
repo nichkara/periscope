@@ -1,6 +1,6 @@
 -- riscv_types.vhd
 -- Created on: So 13. Nov 19:05:44 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: All types needed in processor
 library ieee;
 use ieee.std_logic_1164.all;

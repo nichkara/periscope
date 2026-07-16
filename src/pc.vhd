@@ -1,6 +1,6 @@
 -- Program_Counter.vhd
 -- Created on: Mo 05. Dec 14:21:39 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: program counter
 library IEEE;
 use ieee.std_logic_1164.all;

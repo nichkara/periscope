@@ -1,6 +1,6 @@
 -- cpu.vhd
 -- Created on: Mon 05 Jan 2026 19:09:50 CET
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content:  Entity cpu
 library IEEE;
 use IEEE.std_logic_1164.all;

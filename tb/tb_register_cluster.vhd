@@ -1,6 +1,6 @@
 -- tb_reg.vhd
 -- Created on: Mo 14. Nov 11:55:58 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: Testbench for the registerblock
 
 library ieee;

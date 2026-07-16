@@ -1,6 +1,6 @@
 -- branch.vhd
 -- Created on: 19:01:2023
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Copyright: WTFPL
 -- Content: Entity branch - enable B-types in CPU
 library IEEE;

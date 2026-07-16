@@ -1,5 +1,5 @@
 -- Created on: Do 3. Nov 20:11:50 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content: Entity ram and architecture of ram
 use work.riscv_types.all;
 

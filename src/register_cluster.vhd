@@ -1,6 +1,6 @@
 -- Register_Cluster.vhd
 -- Created on: So 13. Nov 19:06:55 CET 2022
--- Author(s): Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+-- Author(s): Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 -- Content:  Entity Register_Cluster
 library ieee;
 use ieee.std_logic_1164.all;

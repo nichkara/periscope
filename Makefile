@@ -1,6 +1,6 @@
 # Makefile for the different parts of the RISC-V Controller
 # Project by
-# Nina Chloé Kassandra Reiß <nina.reiss@nickr.eu>
+# Nina Chlóe Kassandra Reiß <nina.reiss@nickr.eu>
 include simulation.mk
 include fpga.mk
 
